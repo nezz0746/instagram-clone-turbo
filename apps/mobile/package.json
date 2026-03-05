@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
+    "@expo/metro-runtime": "^55.0.6",
     "@expo/vector-icons": "^14",
     "@ig/shared": "workspace:*",
     "@ig/ui": "workspace:*",
