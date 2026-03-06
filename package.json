@@ -14,7 +14,9 @@
     "format": "biome format .",
     "format:fix": "biome format --fix .",
     "build:api": "turbo build --filter=api",
-    "start:api": "turbo start --filter=api"
+    "start:api": "turbo start --filter=api",
+    "build:web": "turbo build --filter=mobile",
+    "start:web": "turbo start --filter=mobile"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",

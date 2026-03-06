@@ -1,12 +1,13 @@
 {
-  "name": "@garona/mobile",
+  "name": "mobile",
   "version": "0.0.1",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start --clear",
     "dev:web": "expo start --web",
-    "build": "expo export",
+    "build": "expo export -p web",
+    "start": "expo serve",
     "lint": "echo ok"
   },
   "dependencies": {
