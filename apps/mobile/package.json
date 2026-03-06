@@ -1,5 +1,5 @@
 {
-  "name": "@ig/mobile",
+  "name": "@garona/mobile",
   "version": "0.0.1",
   "private": true,
   "main": "expo-router/entry",
@@ -13,8 +13,8 @@
     "@babel/runtime": "^7.28.6",
     "@expo/metro-runtime": "^55.0.6",
     "@expo/vector-icons": "^15.1.1",
-    "@ig/shared": "workspace:*",
-    "@ig/ui": "workspace:*",
+    "@garona/shared": "workspace:*",
+    "@garona/ui": "workspace:*",
     "expo": "~55.0.5",
     "expo-constants": "~55.0.7",
     "expo-linking": "~55.0.7",

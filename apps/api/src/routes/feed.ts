@@ -1,0 +1,116 @@
+import { Hono } from "hono";
+import { db, posts, users, likes, comments, follows } from "@garona/db";
+import { eq, desc, sql, and, inArray } from "drizzle-orm";
+
+const app = new Hono();
+
+// Get feed (posts from people you follow + your own)
+app.get("/", async (c) => {
+  const userId = c.get("userId");
+  const limit = Number(c.req.query("limit") || 20);
+  const offset = Number(c.req.query("offset") || 0);
+
+  // Get who I follow
+  const myFollows = await db
+    .select({ followingId: follows.followingId })
+    .from(follows)
+    .where(eq(follows.followerId, userId));
+
+  const followingIds = myFollows.map((f) => f.followingId);
+  if (userId) followingIds.push(userId); // include own posts
+
+  if (followingIds.length === 0) {
+    // No follows — show latest posts from anyone (discovery)
+    const allPosts = await db
+      .select()
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .orderBy(desc(posts.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return c.json(await enrichPosts(allPosts, userId));
+  }
+
+  const feedPosts = await db
+    .select()
+    .from(posts)
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .where(inArray(posts.authorId, followingIds))
+    .orderBy(desc(posts.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return c.json(await enrichPosts(feedPosts, userId));
+});
+
+// Get single post
+app.get("/:postId", async (c) => {
+  const postId = c.req.param("postId");
+  const userId = c.get("userId");
+
+  const result = await db
+    .select()
+    .from(posts)
+    .innerJoin(users, eq(posts.authorId, users.id))
+    .where(eq(posts.id, postId));
+
+  if (result.length === 0) return c.json({ error: "Not found" }, 404);
+
+  const enriched = await enrichPosts(result, userId);
+  return c.json(enriched[0]);
+});
+
+// Helper: add likes count, comment count, liked status
+async function enrichPosts(
+  rawPosts: { posts: typeof posts.$inferSelect; users: typeof users.$inferSelect }[],
+  currentUserId: string
+) {
+  if (rawPosts.length === 0) return [];
+
+  const postIds = rawPosts.map((p) => p.posts.id);
+
+  // Like counts
+  const likeCounts = await db
+    .select({ postId: likes.postId, count: sql<number>`count(*)` })
+    .from(likes)
+    .where(inArray(likes.postId, postIds))
+    .groupBy(likes.postId);
+
+  // Comment counts
+  const commentCounts = await db
+    .select({ postId: comments.postId, count: sql<number>`count(*)` })
+    .from(comments)
+    .where(inArray(comments.postId, postIds))
+    .groupBy(comments.postId);
+
+  // My likes
+  const myLikes = currentUserId
+    ? await db
+        .select({ postId: likes.postId })
+        .from(likes)
+        .where(and(inArray(likes.postId, postIds), eq(likes.userId, currentUserId)))
+    : [];
+
+  const likeMap = Object.fromEntries(likeCounts.map((l) => [l.postId, Number(l.count)]));
+  const commentMap = Object.fromEntries(commentCounts.map((c) => [c.postId, Number(c.count)]));
+  const myLikeSet = new Set(myLikes.map((l) => l.postId));
+
+  return rawPosts.map((p) => ({
+    id: p.posts.id,
+    caption: p.posts.caption,
+    imageUrl: p.posts.imageUrl,
+    createdAt: p.posts.createdAt,
+    author: {
+      id: p.users.id,
+      username: p.users.username,
+      name: p.users.name,
+      avatarUrl: p.users.avatarUrl,
+    },
+    likes: likeMap[p.posts.id] || 0,
+    comments: commentMap[p.posts.id] || 0,
+    liked: myLikeSet.has(p.posts.id),
+  }));
+}
+
+export default app;

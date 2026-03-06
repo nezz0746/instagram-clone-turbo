@@ -1,7 +1,7 @@
 import { View, Text, TextInput, FlatList, Image, StyleSheet, Dimensions, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, EXPLORE_IMAGES } from "@ig/shared";
+import { colors, EXPLORE_IMAGES } from "@garona/shared";
 
 const GAP = 2;
 const COLS = 3;

@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@ig/shared";
+import { colors } from "@garona/shared";
 
 export default function CreateScreen() {
   const insets = useSafeAreaInsets();

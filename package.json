@@ -1,5 +1,5 @@
 {
-  "name": "instagram-clone",
+  "name": "garona",
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
@@ -9,6 +9,12 @@
   },
   "devDependencies": {
     "turbo": "^2"
+  },
+  "pnpm": {
+    "overrides": {
+      "prisma": "npm:empty-npm-package@1.0.0",
+      "@prisma/client": "npm:empty-npm-package@1.0.0"
+    }
   },
   "packageManager": "pnpm@9.15.4"
 }

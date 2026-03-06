@@ -1,5 +1,5 @@
 import { Image, StyleSheet, View } from "react-native";
-import { colors } from "@ig/shared";
+import { colors } from "@garona/shared";
 
 type Props = {
   uri: string;

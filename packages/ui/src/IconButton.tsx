@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@ig/shared";
+import { colors } from "@garona/shared";
 
 type Props = {
   name: keyof typeof Ionicons.glyphMap;

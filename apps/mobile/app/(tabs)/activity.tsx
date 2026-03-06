@@ -1,7 +1,7 @@
 import { View, Text, FlatList, StyleSheet, Pressable, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, NOTIFICATIONS, Notification } from "@ig/shared";
-import { Avatar } from "@ig/ui";
+import { colors, NOTIFICATIONS, Notification } from "@garona/shared";
+import { Avatar } from "@garona/ui";
 
 function NotifRow({ item }: { item: Notification }) {
   return (

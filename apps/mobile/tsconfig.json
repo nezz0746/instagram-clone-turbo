@@ -3,10 +3,10 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@ig/shared": [
+      "@garona/shared": [
         "../../packages/shared/src"
       ],
-      "@ig/ui": [
+      "@garona/ui": [
         "../../packages/ui/src"
       ]
     }

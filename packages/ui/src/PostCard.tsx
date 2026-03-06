@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, Text, Image, StyleSheet, Dimensions, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, Post } from "@ig/shared";
+import { colors, Post } from "@garona/shared";
 import { Avatar } from "./Avatar";
 import { IconButton } from "./IconButton";
 

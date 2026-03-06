@@ -1,5 +1,5 @@
 import { ScrollView, View, Text, StyleSheet, Pressable } from "react-native";
-import { colors, Story } from "@ig/shared";
+import { colors, Story } from "@garona/shared";
 import { Avatar } from "./Avatar";
 import { Ionicons } from "@expo/vector-icons";
 

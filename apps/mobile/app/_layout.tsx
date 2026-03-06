@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
-import { colors } from "@ig/shared";
+import { colors } from "@garona/shared";
 
 export default function RootLayout() {
   return (

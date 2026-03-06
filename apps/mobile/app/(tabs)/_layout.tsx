@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "@ig/shared";
+import { colors } from "@garona/shared";
 
 type TabIcon = { color: string; focused: boolean };
 

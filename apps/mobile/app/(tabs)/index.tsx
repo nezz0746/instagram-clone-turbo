@@ -1,7 +1,7 @@
 import { FlatList, View, Text, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, POSTS, STORIES } from "@ig/shared";
-import { PostCard, StoryBar, IconButton } from "@ig/ui";
+import { colors, POSTS, STORIES } from "@garona/shared";
+import { PostCard, StoryBar, IconButton } from "@garona/ui";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
