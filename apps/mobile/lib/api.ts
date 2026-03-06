@@ -85,6 +85,15 @@ export const profilesApi = {
     ),
 };
 
+// ─── Upload ───
+export const uploadApi = {
+  presign: (contentType = "image/jpeg") =>
+    apiFetch<{ uploadUrl: string; publicUrl: string; key: string; method: string; headers: Record<string, string> }>(
+      "/api/upload/presign",
+      { method: "POST", body: JSON.stringify({ contentType }) }
+    ),
+};
+
 // ─── Vouches ───
 export type VouchInfo = {
   palier: number;

@@ -7,6 +7,7 @@ import vouchRoutes from "./routes/vouches";
 import feedRoutes from "./routes/feed";
 import postRoutes from "./routes/posts";
 import profileRoutes from "./routes/profiles";
+import uploadRoutes from "./routes/upload";
 
 const app = new Hono();
 
@@ -47,6 +48,7 @@ app.route("/api/vouches", vouchRoutes);
 app.route("/api/feed", feedRoutes);
 app.route("/api/posts", postRoutes);
 app.route("/api/profiles", profileRoutes);
+app.route("/api/upload", uploadRoutes);
 
 // Health
 app.get("/", (c) => c.json({ name: "Garona API", status: "ok" }));

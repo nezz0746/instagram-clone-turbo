@@ -1,0 +1,70 @@
+import { Hono } from "hono";
+import { requirePalier } from "../middleware";
+import crypto from "crypto";
+
+const app = new Hono();
+
+// Generate presigned upload URL (palier >= 2)
+app.post("/presign", requirePalier(2), async (c) => {
+  const userId = c.get("userId");
+  const { contentType = "image/jpeg" } = await c.req.json().catch(() => ({}));
+
+  const ext = contentType === "image/png" ? "png" : "jpg";
+  const key = `posts/${userId}/${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
+
+  const S3_ENDPOINT = process.env.S3_ENDPOINT || "http://localhost:9000";
+  const S3_BUCKET = process.env.S3_BUCKET || "garona";
+  const S3_ACCESS_KEY = process.env.S3_ACCESS_KEY || "garona";
+  const S3_SECRET_KEY = process.env.S3_SECRET_KEY || "garona123";
+
+  // For MinIO local dev: direct upload URL
+  // In production: use AWS SDK presigned URL
+  const uploadUrl = `${S3_ENDPOINT}/${S3_BUCKET}/${key}`;
+  const publicUrl = `${S3_ENDPOINT}/${S3_BUCKET}/${key}`;
+
+  return c.json({
+    uploadUrl,
+    publicUrl,
+    key,
+    method: "PUT",
+    headers: {
+      "Content-Type": contentType,
+    },
+  });
+});
+
+// Direct upload endpoint for dev (accepts multipart)
+app.post("/", requirePalier(2), async (c) => {
+  const body = await c.req.parseBody();
+  const file = body["file"];
+
+  if (!file || !(file instanceof File)) {
+    return c.json({ error: "No file provided" }, 400);
+  }
+
+  const userId = c.get("userId");
+  const ext = file.type === "image/png" ? "png" : "jpg";
+  const key = `posts/${userId}/${Date.now()}-${crypto.randomBytes(4).toString("hex")}.${ext}`;
+
+  const S3_ENDPOINT = process.env.S3_ENDPOINT || "http://localhost:9000";
+  const S3_BUCKET = process.env.S3_BUCKET || "garona";
+
+  // Upload to MinIO/S3
+  const arrayBuffer = await file.arrayBuffer();
+  const uploadRes = await fetch(`${S3_ENDPOINT}/${S3_BUCKET}/${key}`, {
+    method: "PUT",
+    body: arrayBuffer,
+    headers: {
+      "Content-Type": file.type,
+    },
+  });
+
+  if (!uploadRes.ok) {
+    return c.json({ error: "Upload failed" }, 500);
+  }
+
+  const publicUrl = `${S3_ENDPOINT}/${S3_BUCKET}/${key}`;
+  return c.json({ url: publicUrl, key });
+});
+
+export default app;
