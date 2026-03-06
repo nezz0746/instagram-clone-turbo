@@ -3,6 +3,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, CURRENT_USER } from "@garona/shared";
 import { Avatar, IconButton } from "@garona/ui";
+import { PalierBadge } from "../../components/PalierBadge";
+import { useAuth } from "../../lib/auth";
 
 const GAP = 2;
 const COLS = 3;
@@ -53,7 +55,10 @@ export default function ProfileScreen() {
               </View>
             </View>
             <View style={styles.bio}>
-              <Text style={styles.displayName}>{CURRENT_USER.displayName}</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Text style={styles.displayName}>{CURRENT_USER.displayName}</Text>
+                <PalierBadge palier={4} size="sm" />
+              </View>
               <Text style={styles.bioText}>{CURRENT_USER.bio}</Text>
             </View>
             {/* Buttons */}
