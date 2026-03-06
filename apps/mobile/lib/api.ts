@@ -10,10 +10,13 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
     url += `?${qs}`;
   }
 
+  const devHeaders: Record<string, string> = __DEV__ ? { "X-Dev-User": "nezz" } : {};
+
   const res = await fetch(url, {
     ...init,
     headers: {
       "Content-Type": "application/json",
+      ...devHeaders,
       ...init.headers,
     },
     credentials: "include",
@@ -32,6 +35,8 @@ export type FeedPost = {
   id: string;
   caption: string | null;
   imageUrl: string;
+  imageUrls?: string[];
+  imageCount?: number;
   createdAt: string;
   author: { id: string; username: string; name: string; avatarUrl: string | null };
   likes: number;
@@ -46,8 +51,8 @@ export const feedApi = {
 
 // ─── Posts ───
 export const postsApi = {
-  create: (imageUrl: string, caption?: string) =>
-    apiFetch<{ id: string }>("/api/posts", { method: "POST", body: JSON.stringify({ imageUrl, caption }) }),
+  create: (imageUrls: string[], caption?: string) =>
+    apiFetch<{ id: string }>("/api/posts", { method: "POST", body: JSON.stringify({ imageUrls, caption }) }),
   like: (postId: string) =>
     apiFetch<{ liked: boolean }>(`/api/posts/${postId}/like`, { method: "POST" }),
   comment: (postId: string, text: string) =>
@@ -74,8 +79,18 @@ export type Profile = {
   isMe: boolean;
 };
 
+export type UserPost = {
+  id: string;
+  imageUrl: string;
+  createdAt: string;
+};
+
 export const profilesApi = {
   get: (username: string) => apiFetch<Profile>(`/api/profiles/${username}`),
+  posts: (username: string, limit = 30) =>
+    apiFetch<UserPost[]>(`/api/profiles/${username}/posts`, { params: { limit: String(limit) } }),
+  postsFeed: (username: string, limit = 50) =>
+    apiFetch<FeedPost[]>(`/api/profiles/${username}/posts`, { params: { limit: String(limit), format: "feed" } }),
   follow: (username: string) =>
     apiFetch<{ following: boolean }>(`/api/profiles/${username}/follow`, { method: "POST" }),
   search: (q: string) =>
@@ -83,6 +98,48 @@ export const profilesApi = {
       "/api/profiles",
       { params: { q } }
     ),
+};
+
+// ─── Activity ───
+export type ActivityItem = {
+  id: string;
+  type: "like" | "comment" | "follow";
+  actor: { id: string; username: string; name: string; avatarUrl: string | null };
+  text?: string;
+  postId?: string;
+  postImage?: string;
+  createdAt: string;
+};
+
+export const activityApi = {
+  get: (limit = 30) =>
+    apiFetch<ActivityItem[]>("/api/activity", { params: { limit: String(limit) } }),
+};
+
+// ─── Signup ───
+export type SignupResult = {
+  id: string;
+  name: string;
+  username: string;
+  avatarUrl: string | null;
+  rang: number;
+};
+
+export const signupApi = {
+  create: (name: string, username: string, inviteCode?: string) =>
+    apiFetch<SignupResult>("/api/signup", {
+      method: "POST",
+      body: JSON.stringify({ name, username, ...(inviteCode && { inviteCode }) }),
+    }),
+};
+
+// ─── Signin ───
+export const signinApi = {
+  byUsername: (username: string) =>
+    apiFetch<SignupResult>("/api/signin", {
+      method: "POST",
+      body: JSON.stringify({ username }),
+    }),
 };
 
 // ─── Upload ───

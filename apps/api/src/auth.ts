@@ -1,31 +1,25 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { passkey } from "@better-auth/passkey";
 import { db } from "@garona/db";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3001",
   database: drizzleAdapter(db, { provider: "pg" }),
   emailAndPassword: {
-    enabled: false, // social only
+    enabled: true,
   },
-  socialProviders: {
-    // Instagram + Apple — configure via env vars
-    ...(process.env.INSTAGRAM_CLIENT_ID && {
-      instagram: {
-        clientId: process.env.INSTAGRAM_CLIENT_ID!,
-        clientSecret: process.env.INSTAGRAM_CLIENT_SECRET!,
-      },
+  plugins: [
+    passkey({
+      rpID: process.env.PASSKEY_RP_ID || "localhost",
+      rpName: "Garona",
+      origin: process.env.PASSKEY_ORIGIN || "http://localhost:3001",
     }),
-    ...(process.env.APPLE_CLIENT_ID && {
-      apple: {
-        clientId: process.env.APPLE_CLIENT_ID!,
-        clientSecret: process.env.APPLE_CLIENT_SECRET!,
-      },
-    }),
-  },
+  ],
   trustedOrigins: [
-    "http://localhost:8081", // Expo dev
-    "http://localhost:19006", // Expo web
-    "garona://", // Expo scheme
+    "http://localhost:8081",
+    "http://localhost:19006",
+    "http://192.168.1.58:3001",
+    "garona://",
   ],
 });

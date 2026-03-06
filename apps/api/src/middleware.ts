@@ -10,7 +10,9 @@ export async function getUserPalier(userId: string): Promise<PalierLevel> {
     .from(vouches)
     .where(and(eq(vouches.voucheeId, userId), eq(vouches.revoked, false)));
 
-  return computePalier(Number(result[0]?.total ?? 0));
+  const computed = computePalier(Number(result[0]?.total ?? 0));
+  // Authenticated users are always at least Rang 1 (Membre)
+  return Math.max(computed, 1) as PalierLevel;
 }
 
 // Middleware factory: require minimum palier level

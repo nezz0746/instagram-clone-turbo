@@ -4,12 +4,30 @@
     "slug": "garona",
     "scheme": "garona",
     "version": "1.0.0",
-    "platforms": ["ios", "android", "web"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "ios": {
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Garona utilise Face ID pour sécuriser ton compte"
+      }
+    },
     "web": {
       "bundler": "metro",
       "output": "single"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      "expo-sharing",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Garona utilise Face ID pour sécuriser ton compte"
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }

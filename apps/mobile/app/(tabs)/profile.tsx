@@ -1,19 +1,18 @@
-import { View, Text, FlatList, Image, StyleSheet, Dimensions, Pressable } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import { View, Text, FlatList, Image, StyleSheet, Dimensions, Pressable, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, CURRENT_USER } from "@garona/shared";
+import { colors } from "@garona/shared";
 import { Avatar, IconButton } from "@garona/ui";
 import { PalierBadge } from "../../components/PalierBadge";
-import { InviteGenerator } from "../../components/InviteGenerator";
+import { ProfileShareSheet } from "../../components/ProfileShareSheet";
 import { useAuth } from "../../lib/auth";
+import { profilesApi, Profile, UserPost } from "../../lib/api";
 
 const GAP = 2;
 const COLS = 3;
 const TILE = (Math.min(Dimensions.get("window").width, 600) - GAP * (COLS - 1)) / COLS;
-const USER_POSTS = Array.from({ length: 18 }, (_, i) => ({
-  id: `up-${i}`,
-  image: `https://picsum.photos/seed/userpost${i}/300/300`,
-}));
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
@@ -27,20 +26,46 @@ function Stat({ label, value }: { label: string; value: number }) {
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, signOut } = useAuth();
-  const palier = user?.palier ?? 0;
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [userPosts, setUserPosts] = useState<UserPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [shareVisible, setShareVisible] = useState(false);
+
+  const load = useCallback(async () => {
+    if (!user?.username) return;
+    setLoading(true);
+    try {
+      const [p, posts] = await Promise.all([
+        profilesApi.get(user.username),
+        profilesApi.posts(user.username),
+      ]);
+      setProfile(p);
+      setUserPosts(posts);
+    } catch {}
+    setLoading(false);
+  }, [user?.username]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (loading && !profile) {
+    return (
+      <View style={[styles.container, styles.center, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.headerName}>{user?.username || CURRENT_USER.username}</Text>
+        <Text style={styles.headerName}>{user?.username || "profil"}</Text>
         <View style={styles.headerIcons}>
-          <IconButton name="add-circle-outline" size={26} />
           <IconButton name="log-out-outline" size={24} onPress={signOut} />
         </View>
       </View>
 
       <FlatList
-        data={USER_POSTS}
+        data={userPosts}
         keyExtractor={(i) => i.id}
         numColumns={COLS}
         columnWrapperStyle={{ gap: GAP }}
@@ -49,45 +74,55 @@ export default function ProfileScreen() {
           <View>
             {/* Profile info */}
             <View style={styles.profileRow}>
-              <Avatar uri={user?.avatarUrl || CURRENT_USER.avatar} size={80} />
+              <Avatar uri={profile?.avatarUrl || user?.avatarUrl || "https://i.pravatar.cc/150"} size={80} />
               <View style={styles.statsRow}>
-                <Stat label="Posts" value={CURRENT_USER.posts} />
-                <Stat label="Abonnés" value={CURRENT_USER.followers} />
-                <Stat label="Abonnements" value={CURRENT_USER.following} />
+                <Stat label="Posts" value={profile?.posts ?? 0} />
+                <Stat label="Abonnés" value={profile?.followers ?? 0} />
+                <Stat label="Abonnements" value={profile?.following ?? 0} />
               </View>
             </View>
 
             <View style={styles.bio}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Text style={styles.displayName}>{user?.name || CURRENT_USER.displayName}</Text>
-                <PalierBadge palier={palier} size="sm" />
+                <Text style={styles.displayName}>{profile?.name || user?.name}</Text>
+                <PalierBadge palier={profile?.palier ?? user?.palier ?? 0} size="sm" />
               </View>
-              <Text style={styles.bioText}>{CURRENT_USER.bio}</Text>
+              {profile?.bio && <Text style={styles.bioText}>{profile.bio}</Text>}
             </View>
 
             {/* Buttons */}
             <View style={styles.btnRow}>
               <Pressable style={styles.editBtn}><Text style={styles.editText}>Modifier le profil</Text></Pressable>
-              <Pressable style={styles.editBtn}><Text style={styles.editText}>Partager</Text></Pressable>
+              <Pressable style={styles.editBtn} onPress={() => setShareVisible(true)}><Text style={styles.editText}>Partager</Text></Pressable>
             </View>
 
-            {/* Invite section */}
-            <InviteGenerator palier={palier} />
-
-            {/* Grid tabs */}
+            {/* Grid header */}
             <View style={styles.tabs}>
               <Pressable style={[styles.tab, styles.activeTab]}>
                 <Ionicons name="grid-outline" size={22} color={colors.text} />
               </Pressable>
-              <Pressable style={styles.tab}>
-                <Ionicons name="shield-checkmark-outline" size={22} color={colors.textMuted} />
-              </Pressable>
             </View>
           </View>
         )}
-        renderItem={({ item }) => (
-          <Pressable><Image source={{ uri: item.image }} style={{ width: TILE, height: TILE }} /></Pressable>
+        ListEmptyComponent={() => (
+          <View style={styles.empty}>
+            <Ionicons name="camera-outline" size={40} color={colors.textMuted} />
+            <Text style={styles.emptyText}>Aucune publication</Text>
+          </View>
         )}
+        renderItem={({ item, index }) => (
+          <Pressable onPress={() => router.push(`/posts/${user?.username}?startIndex=${index}`)}>
+            <Image source={{ uri: item.imageUrl }} style={{ width: TILE, height: TILE }} />
+          </Pressable>
+        )}
+      />
+
+      <ProfileShareSheet
+        visible={shareVisible}
+        onClose={() => setShareVisible(false)}
+        username={user?.username || ""}
+        name={profile?.name || user?.name || ""}
+        avatarUrl={profile?.avatarUrl || user?.avatarUrl || null}
       />
     </View>
   );
@@ -95,6 +130,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
+  center: { justifyContent: "center", alignItems: "center" },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: colors.border },
   headerName: { fontSize: 20, fontWeight: "700", color: colors.text },
   headerIcons: { flexDirection: "row", gap: 16 },
@@ -104,12 +140,14 @@ const styles = StyleSheet.create({
   statVal: { color: colors.text, fontWeight: "700", fontSize: 16 },
   statLabel: { color: colors.textSecondary, fontSize: 12, marginTop: 2 },
   bio: { paddingHorizontal: 16, paddingTop: 12 },
-  displayName: { color: colors.text, fontWeight: "600", fontSize: 13 },
-  bioText: { color: colors.text, fontSize: 13, marginTop: 2 },
+  displayName: { color: colors.text, fontWeight: "600", fontSize: 15 },
+  bioText: { color: colors.text, fontSize: 13, marginTop: 4 },
   btnRow: { flexDirection: "row", paddingHorizontal: 16, paddingTop: 16, gap: 6 },
   editBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 8, paddingVertical: 7, alignItems: "center", borderWidth: 1, borderColor: colors.border },
   editText: { color: colors.primary, fontWeight: "600", fontSize: 13 },
-  tabs: { flexDirection: "row", borderTopWidth: 0.5, borderTopColor: colors.border, borderBottomWidth: 0.5, borderBottomColor: colors.border },
+  tabs: { flexDirection: "row", borderTopWidth: 0.5, borderTopColor: colors.border, borderBottomWidth: 0.5, borderBottomColor: colors.border, marginTop: 16 },
   tab: { flex: 1, alignItems: "center", paddingVertical: 10 },
   activeTab: { borderBottomWidth: 2, borderBottomColor: colors.primary },
+  empty: { padding: 60, alignItems: "center", gap: 12 },
+  emptyText: { color: colors.textMuted, fontSize: 15 },
 });

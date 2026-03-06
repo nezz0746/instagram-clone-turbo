@@ -29,4 +29,10 @@ export const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 // API base URL
-export const API_URL = __DEV__ ? "http://localhost:3001" : "https://api.garona.city";
+// Use local IP for physical device, localhost for simulator
+import { Platform } from "react-native";
+export const API_URL = __DEV__
+  ? Platform.OS === "android"
+    ? "http://10.0.2.2:3001"
+    : "http://192.168.1.58:3001"
+  : "https://api.garona.city";

@@ -1,80 +1,118 @@
 import { useState, useCallback } from "react";
-import { View } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { colors } from "@garona/shared";
 import { AuthContext, AuthUser } from "../lib/auth";
-import { OnboardingCarousel } from "../components/OnboardingCarousel";
-import { QRScanner } from "../components/QRScanner";
-import { InviteValidator } from "../components/InviteValidator";
+import { LaunchScreen } from "../components/LaunchScreen";
+import { SignupForm } from "../components/SignupForm";
+import { SigninSheet } from "../components/SigninSheet";
+import { TutorialSlides } from "../components/TutorialSlides";
+import { SignupResult } from "../lib/api";
 
-type AppState = "onboarding" | "scanning" | "validating" | "authenticated";
+type AppState = "launch" | "signup" | "tutorial" | "authenticated";
 
 export default function RootLayout() {
-  const [appState, setAppState] = useState<AppState>("onboarding");
+  const [appState, setAppState] = useState<AppState>("launch");
   const [user, setUser] = useState<AuthUser>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [scannedCode, setScannedCode] = useState<string>("");
+  const [showSignIn, setShowSignIn] = useState(false);
 
-  const handleOnboardingFinish = useCallback(() => {
-    setAppState("scanning");
-  }, []);
-
-  const handleCodeScanned = useCallback((code: string) => {
-    setScannedCode(code);
-    setAppState("validating");
-  }, []);
-
-  const handleInviteAccepted = useCallback((code: string) => {
-    setInviteCode(code);
-    // In production: trigger BetterAuth sign-in flow here
-    // For now: mock sign-in with a seed user
+  const handleSignedUp = useCallback((result: SignupResult) => {
     setUser({
-      id: "mock-new-user",
-      name: "Nouveau",
-      username: "nouveau.toulouse",
-      avatarUrl: "https://i.pravatar.cc/150?u=nouveau",
-      palier: 0,
+      id: result.id,
+      name: result.name,
+      username: result.username,
+      avatarUrl: result.avatarUrl,
+      palier: result.rang,
     });
-    setAppState("authenticated");
+    setAppState("tutorial"); // Show tutorial after signup
+  }, []);
+
+  const handleSignedIn = useCallback((result: SignupResult) => {
+    setUser({
+      id: result.id,
+      name: result.name,
+      username: result.username,
+      avatarUrl: result.avatarUrl,
+      palier: result.rang,
+    });
+    setShowSignIn(false);
+    setAppState("authenticated"); // Skip tutorial for returning users
   }, []);
 
   const signOut = useCallback(() => {
     setUser(null);
     setInviteCode(null);
-    setAppState("onboarding");
+    setAppState("launch");
   }, []);
 
-  // Unauthenticated states
-  if (appState === "onboarding") {
+  const devSkip = useCallback(() => {
+    setUser({
+      id: "dev-user",
+      name: "Nezz",
+      username: "nezz",
+      avatarUrl: "https://i.pravatar.cc/150?u=nezz",
+      palier: 4,
+    });
+    setAppState("authenticated");
+  }, []);
+
+  // Launch screen
+  if (appState === "launch") {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <StatusBar style="dark" />
-        <OnboardingCarousel onFinish={handleOnboardingFinish} />
+        <LaunchScreen
+          onSignUp={() => setAppState("signup")}
+          onSignIn={() => setShowSignIn(true)}
+        />
+        <SigninSheet
+          visible={showSignIn}
+          onClose={() => setShowSignIn(false)}
+          onSignedIn={handleSignedIn}
+        />
+        {__DEV__ && (
+          <Pressable
+            onPress={devSkip}
+            style={{
+              position: "absolute",
+              top: 60,
+              right: 20,
+              backgroundColor: "#333",
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 6,
+            }}
+          >
+            <Text style={{ color: "#fff", fontSize: 12 }}>⚡ Dev</Text>
+          </Pressable>
+        )}
       </View>
     );
   }
 
-  if (appState === "scanning") {
+  // Sign up form
+  if (appState === "signup") {
     return (
-      <View style={{ flex: 1 }}>
-        <StatusBar style="light" />
-        <QRScanner
-          onCodeScanned={handleCodeScanned}
-          onClose={() => setAppState("onboarding")}
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        <StatusBar style="dark" />
+        <SignupForm
+          onSignedUp={handleSignedUp}
+          onBack={() => setAppState("launch")}
         />
       </View>
     );
   }
 
-  if (appState === "validating") {
+  // Post-signup tutorial
+  if (appState === "tutorial") {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <StatusBar style="dark" />
-        <InviteValidator
-          code={scannedCode}
-          onAccept={handleInviteAccepted}
-          onBack={() => setAppState("scanning")}
+        <TutorialSlides
+          userName={user?.name || ""}
+          onFinish={() => setAppState("authenticated")}
         />
       </View>
     );
@@ -97,6 +135,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="user/[username]" options={{ presentation: "card" }} />
+          <Stack.Screen name="posts/[username]" options={{ presentation: "card" }} />
         </Stack>
       </View>
     </AuthContext.Provider>

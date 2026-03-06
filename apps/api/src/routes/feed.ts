@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { db, posts, users, likes, comments, follows } from "@garona/db";
+import { db, posts, postImages, users, likes, comments, follows } from "@garona/db";
 import { eq, desc, sql, and, inArray } from "drizzle-orm";
 
 const app = new Hono();
@@ -10,6 +10,19 @@ app.get("/", async (c) => {
   const limit = Number(c.req.query("limit") || 20);
   const offset = Number(c.req.query("offset") || 0);
 
+  // If not authenticated, show discovery feed
+  if (!userId) {
+    const allPosts = await db
+      .select()
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .orderBy(desc(posts.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    return c.json(await enrichPosts(allPosts, null));
+  }
+
   // Get who I follow
   const myFollows = await db
     .select({ followingId: follows.followingId })
@@ -17,7 +30,7 @@ app.get("/", async (c) => {
     .where(eq(follows.followerId, userId));
 
   const followingIds = myFollows.map((f) => f.followingId);
-  if (userId) followingIds.push(userId); // include own posts
+  followingIds.push(userId); // include own posts
 
   if (followingIds.length === 0) {
     // No follows — show latest posts from anyone (discovery)
@@ -62,9 +75,9 @@ app.get("/:postId", async (c) => {
 });
 
 // Helper: add likes count, comment count, liked status
-async function enrichPosts(
+export async function enrichPosts(
   rawPosts: { posts: typeof posts.$inferSelect; users: typeof users.$inferSelect }[],
-  currentUserId: string
+  currentUserId: string | null
 ) {
   if (rawPosts.length === 0) return [];
 
@@ -92,6 +105,19 @@ async function enrichPosts(
         .where(and(inArray(likes.postId, postIds), eq(likes.userId, currentUserId)))
     : [];
 
+  // Multi-image data
+  const allImages = await db
+    .select({ postId: postImages.postId, imageUrl: postImages.imageUrl, position: postImages.position })
+    .from(postImages)
+    .where(inArray(postImages.postId, postIds))
+    .orderBy(postImages.position);
+
+  const imagesMap: Record<string, string[]> = {};
+  for (const img of allImages) {
+    if (!imagesMap[img.postId]) imagesMap[img.postId] = [];
+    imagesMap[img.postId].push(img.imageUrl);
+  }
+
   const likeMap = Object.fromEntries(likeCounts.map((l) => [l.postId, Number(l.count)]));
   const commentMap = Object.fromEntries(commentCounts.map((c) => [c.postId, Number(c.count)]));
   const myLikeSet = new Set(myLikes.map((l) => l.postId));
@@ -100,6 +126,8 @@ async function enrichPosts(
     id: p.posts.id,
     caption: p.posts.caption,
     imageUrl: p.posts.imageUrl,
+    imageUrls: imagesMap[p.posts.id] || [p.posts.imageUrl],
+    imageCount: (imagesMap[p.posts.id] || [p.posts.imageUrl]).length,
     createdAt: p.posts.createdAt,
     author: {
       id: p.users.id,

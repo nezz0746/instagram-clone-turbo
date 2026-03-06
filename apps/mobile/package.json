@@ -4,7 +4,7 @@
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "dev": "expo start",
+    "dev": "expo start --clear",
     "dev:web": "expo start --web",
     "build": "expo export",
     "lint": "echo ok"
@@ -17,17 +17,24 @@
     "@garona/ui": "workspace:*",
     "expo": "~55.0.5",
     "expo-camera": "~55.0.9",
+    "expo-clipboard": "~55.0.8",
     "expo-constants": "~55.0.7",
     "expo-image-picker": "~55.0.11",
     "expo-linking": "~55.0.7",
+    "expo-local-authentication": "~55.0.8",
+    "expo-media-library": "~55.0.9",
     "expo-router": "~55.0.4",
+    "expo-sharing": "~55.0.11",
     "expo-status-bar": "~55.0.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-native": "0.83.2",
     "react-native-gesture-handler": "~2.30.0",
+    "react-native-passkey": "^3.3.2",
+    "react-native-qrcode-svg": "^6.3.21",
     "react-native-safe-area-context": "5.6.2",
     "react-native-screens": "~4.23.0",
+    "react-native-svg": "15.15.3",
     "react-native-web": "~0.21.2"
   },
   "devDependencies": {

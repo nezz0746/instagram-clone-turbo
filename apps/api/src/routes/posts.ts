@@ -1,21 +1,37 @@
 import { Hono } from "hono";
-import { db, posts, likes, comments } from "@garona/db";
+import { db, posts, postImages, likes, comments, users } from "@garona/db";
 import { eq, and } from "drizzle-orm";
 import { requirePalier } from "../middleware";
 
 const app = new Hono();
 
 // Create post (palier >= 2)
+// Accepts { imageUrl, caption } or { imageUrls: string[], caption }
 app.post("/", requirePalier(2), async (c) => {
   const userId = c.get("userId");
-  const { imageUrl, caption } = await c.req.json();
+  const body = await c.req.json();
+  const { caption } = body;
 
-  if (!imageUrl) return c.json({ error: "Image required" }, 400);
+  // Support both single and multi-image
+  const imageUrls: string[] = body.imageUrls || (body.imageUrl ? [body.imageUrl] : []);
+  if (imageUrls.length === 0) return c.json({ error: "Image required" }, 400);
 
   const [post] = await db
     .insert(posts)
-    .values({ authorId: userId, imageUrl, caption })
+    .values({
+      authorId: userId,
+      imageUrl: imageUrls[0], // cover image
+      caption,
+      imageCount: imageUrls.length,
+    })
     .returning();
+
+  // Insert all images into postImages
+  if (imageUrls.length > 0) {
+    await db.insert(postImages).values(
+      imageUrls.map((url, i) => ({ postId: post.id, imageUrl: url, position: i }))
+    );
+  }
 
   return c.json(post, 201);
 });
@@ -57,12 +73,32 @@ app.post("/:postId/comment", requirePalier(2), async (c) => {
 app.get("/:postId/comments", async (c) => {
   const postId = c.req.param("postId");
 
-  const result = await db.query.comments.findMany({
-    where: eq(comments.postId, postId),
-    orderBy: (comments, { asc }) => [asc(comments.createdAt)],
-  });
+  const result = await db
+    .select({
+      id: comments.id,
+      postId: comments.postId,
+      authorId: comments.authorId,
+      text: comments.text,
+      createdAt: comments.createdAt,
+      authorUsername: users.username,
+      authorName: users.name,
+      authorAvatar: users.avatarUrl,
+    })
+    .from(comments)
+    .innerJoin(users, eq(comments.authorId, users.id))
+    .where(eq(comments.postId, postId))
+    .orderBy(comments.createdAt);
 
-  return c.json(result);
+  return c.json(
+    result.map((r) => ({
+      id: r.id,
+      postId: r.postId,
+      authorId: r.authorId,
+      text: r.text,
+      createdAt: r.createdAt,
+      author: { username: r.authorUsername, name: r.authorName, avatarUrl: r.authorAvatar },
+    }))
+  );
 });
 
 // Delete post (author only)

@@ -8,13 +8,16 @@ import feedRoutes from "./routes/feed";
 import postRoutes from "./routes/posts";
 import profileRoutes from "./routes/profiles";
 import uploadRoutes from "./routes/upload";
+import activityRoutes from "./routes/activity";
+import signupRoutes from "./routes/signup";
+import signinRoutes from "./routes/signin";
 
 const app = new Hono();
 
 // Middleware
 app.use("*", logger());
 app.use("*", cors({
-  origin: ["http://localhost:8081", "http://localhost:19006", "http://localhost:3000"],
+  origin: (origin) => origin || "*", // Allow all origins in dev
   credentials: true,
 }));
 
@@ -29,6 +32,20 @@ app.use("/api/*", async (c, next) => {
   const path = c.req.path;
   if (path.startsWith("/api/auth")) return next();
   if (path.match(/^\/api\/vouches\/invite\/[^/]+$/) && c.req.method === "GET") return next();
+  if (path === "/api/signup" && c.req.method === "POST") return next();
+  if (path === "/api/signin" && c.req.method === "POST") return next();
+
+  // Dev mode: X-Dev-User header maps to a seeded username
+  const devUser = c.req.header("X-Dev-User");
+  if (devUser && process.env.NODE_ENV !== "production") {
+    const { db, users } = await import("@garona/db");
+    const { eq } = await import("drizzle-orm");
+    const [found] = await db.select().from(users).where(eq(users.username, devUser));
+    if (found) {
+      c.set("userId", found.id);
+      return next();
+    }
+  }
 
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
@@ -49,6 +66,9 @@ app.route("/api/feed", feedRoutes);
 app.route("/api/posts", postRoutes);
 app.route("/api/profiles", profileRoutes);
 app.route("/api/upload", uploadRoutes);
+app.route("/api/activity", activityRoutes);
+app.route("/api/signup", signupRoutes);
+app.route("/api/signin", signinRoutes);
 
 // Health
 app.get("/", (c) => c.json({ name: "Garona API", status: "ok" }));

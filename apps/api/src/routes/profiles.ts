@@ -83,6 +83,38 @@ app.post("/:username/follow", requirePalier(1), async (c) => {
   }
 });
 
+// Get user's posts (grid)
+app.get("/:username/posts", async (c) => {
+  const username = c.req.param("username");
+  const limit = Number(c.req.query("limit") || 30);
+  const format = c.req.query("format"); // "feed" for enriched format
+
+  const [user] = await db.select().from(users).where(eq(users.username, username));
+  if (!user) return c.json({ error: "Not found" }, 404);
+
+  if (format === "feed") {
+    const currentUserId = c.get("userId");
+    const { enrichPosts } = await import("./feed");
+    const rawPosts = await db
+      .select()
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .where(eq(posts.authorId, user.id))
+      .orderBy(sql`${posts.createdAt} desc`)
+      .limit(limit);
+    return c.json(await enrichPosts(rawPosts, currentUserId));
+  }
+
+  const userPosts = await db
+    .select({ id: posts.id, imageUrl: posts.imageUrl, createdAt: posts.createdAt })
+    .from(posts)
+    .where(eq(posts.authorId, user.id))
+    .orderBy(sql`${posts.createdAt} desc`)
+    .limit(limit);
+
+  return c.json(userPosts);
+});
+
 // Search users
 app.get("/", async (c) => {
   const q = c.req.query("q");

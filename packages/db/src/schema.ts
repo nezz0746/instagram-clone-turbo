@@ -90,12 +90,24 @@ export const vouches = pgTable("vouches", {
 export const posts = pgTable("posts", {
   id: uuid("id").defaultRandom().primaryKey(),
   authorId: uuid("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  imageUrl: text("image_url").notNull(),
+  imageUrl: text("image_url").notNull(), // first/cover image (backward compat)
   caption: text("caption"),
+  imageCount: integer("image_count").default(1).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (t) => [
   index("posts_author_idx").on(t.authorId),
   index("posts_created_idx").on(t.createdAt),
+]);
+
+// ─── Post Images (multi-image carousel) ───
+export const postImages = pgTable("post_images", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  postId: uuid("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  position: integer("position").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => [
+  index("post_images_post_idx").on(t.postId),
 ]);
 
 // ─── Likes ───
