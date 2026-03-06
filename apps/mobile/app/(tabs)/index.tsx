@@ -1,10 +1,13 @@
-import { FlatList, View, Text, StyleSheet } from "react-native";
+import { FlatList, View, Text, StyleSheet, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { colors, POSTS, STORIES } from "@garona/shared";
-import { PostCard, StoryBar, IconButton } from "@garona/ui";
+import { colors, STORIES } from "@garona/shared";
+import { StoryBar, IconButton } from "@garona/ui";
+import { useFeed } from "../../hooks/useFeed";
+import { FeedPostCard } from "../../components/FeedPostCard";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
+  const { posts, loading, refresh, toggleLike } = useFeed();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -17,10 +20,21 @@ export default function HomeScreen() {
       </View>
 
       <FlatList
-        data={POSTS}
+        data={posts}
         keyExtractor={(p) => p.id}
-        renderItem={({ item }) => <PostCard post={item} />}
+        renderItem={({ item }) => (
+          <FeedPostCard post={item} onLike={() => toggleLike(item.id)} />
+        )}
         ListHeaderComponent={() => <StoryBar stories={STORIES} />}
+        ListEmptyComponent={() =>
+          !loading ? (
+            <View style={styles.empty}>
+              <Text style={styles.emptyText}>Aucune publication pour le moment</Text>
+              <Text style={styles.emptyHint}>Suis des Toulousains pour voir leurs posts ici</Text>
+            </View>
+          ) : null
+        }
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       />
     </View>
@@ -40,4 +54,7 @@ const styles = StyleSheet.create({
   },
   logo: { fontSize: 24, fontWeight: "700", color: colors.primary, letterSpacing: -0.5 },
   headerIcons: { flexDirection: "row", gap: 16 },
+  empty: { padding: 40, alignItems: "center", gap: 8 },
+  emptyText: { fontSize: 16, fontWeight: "600", color: colors.text },
+  emptyHint: { fontSize: 14, color: colors.textMuted, textAlign: "center" },
 });

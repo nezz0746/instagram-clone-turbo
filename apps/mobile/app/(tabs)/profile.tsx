@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, CURRENT_USER } from "@garona/shared";
 import { Avatar, IconButton } from "@garona/ui";
 import { PalierBadge } from "../../components/PalierBadge";
+import { InviteGenerator } from "../../components/InviteGenerator";
 import { useAuth } from "../../lib/auth";
 
 const GAP = 2;
@@ -25,15 +26,16 @@ function Stat({ label, value }: { label: string; value: number }) {
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const { user, signOut } = useAuth();
+  const palier = user?.palier ?? 0;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerName}>{CURRENT_USER.username}</Text>
+        <Text style={styles.headerName}>{user?.username || CURRENT_USER.username}</Text>
         <View style={styles.headerIcons}>
           <IconButton name="add-circle-outline" size={26} />
-          <IconButton name="menu-outline" size={28} />
+          <IconButton name="log-out-outline" size={24} onPress={signOut} />
         </View>
       </View>
 
@@ -47,30 +49,39 @@ export default function ProfileScreen() {
           <View>
             {/* Profile info */}
             <View style={styles.profileRow}>
-              <Avatar uri={CURRENT_USER.avatar} size={80} />
+              <Avatar uri={user?.avatarUrl || CURRENT_USER.avatar} size={80} />
               <View style={styles.statsRow}>
                 <Stat label="Posts" value={CURRENT_USER.posts} />
-                <Stat label="Followers" value={CURRENT_USER.followers} />
-                <Stat label="Following" value={CURRENT_USER.following} />
+                <Stat label="Abonnés" value={CURRENT_USER.followers} />
+                <Stat label="Abonnements" value={CURRENT_USER.following} />
               </View>
             </View>
+
             <View style={styles.bio}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Text style={styles.displayName}>{CURRENT_USER.displayName}</Text>
-                <PalierBadge palier={4} size="sm" />
+                <Text style={styles.displayName}>{user?.name || CURRENT_USER.displayName}</Text>
+                <PalierBadge palier={palier} size="sm" />
               </View>
               <Text style={styles.bioText}>{CURRENT_USER.bio}</Text>
             </View>
+
             {/* Buttons */}
             <View style={styles.btnRow}>
-              <Pressable style={styles.editBtn}><Text style={styles.editText}>Edit profile</Text></Pressable>
-              <Pressable style={styles.editBtn}><Text style={styles.editText}>Share profile</Text></Pressable>
+              <Pressable style={styles.editBtn}><Text style={styles.editText}>Modifier le profil</Text></Pressable>
+              <Pressable style={styles.editBtn}><Text style={styles.editText}>Partager</Text></Pressable>
             </View>
+
+            {/* Invite section */}
+            <InviteGenerator palier={palier} />
+
             {/* Grid tabs */}
             <View style={styles.tabs}>
-              <Pressable style={[styles.tab, styles.activeTab]}><Ionicons name="grid-outline" size={22} color={colors.text} /></Pressable>
-              <Pressable style={styles.tab}><Ionicons name="play-outline" size={22} color={colors.textMuted} /></Pressable>
-              <Pressable style={styles.tab}><Ionicons name="person-outline" size={22} color={colors.textMuted} /></Pressable>
+              <Pressable style={[styles.tab, styles.activeTab]}>
+                <Ionicons name="grid-outline" size={22} color={colors.text} />
+              </Pressable>
+              <Pressable style={styles.tab}>
+                <Ionicons name="shield-checkmark-outline" size={22} color={colors.textMuted} />
+              </Pressable>
             </View>
           </View>
         )}
@@ -86,7 +97,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 8, borderBottomWidth: 0.5, borderBottomColor: colors.border },
   headerName: { fontSize: 20, fontWeight: "700", color: colors.text },
-  headerIcons: { flexDirection: "row", gap: 20 },
+  headerIcons: { flexDirection: "row", gap: 16 },
   profileRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 16, gap: 24 },
   statsRow: { flex: 1, flexDirection: "row", justifyContent: "space-around" },
   stat: { alignItems: "center" },
@@ -95,7 +106,7 @@ const styles = StyleSheet.create({
   bio: { paddingHorizontal: 16, paddingTop: 12 },
   displayName: { color: colors.text, fontWeight: "600", fontSize: 13 },
   bioText: { color: colors.text, fontSize: 13, marginTop: 2 },
-  btnRow: { flexDirection: "row", paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, gap: 6 },
+  btnRow: { flexDirection: "row", paddingHorizontal: 16, paddingTop: 16, gap: 6 },
   editBtn: { flex: 1, backgroundColor: colors.surface, borderRadius: 8, paddingVertical: 7, alignItems: "center", borderWidth: 1, borderColor: colors.border },
   editText: { color: colors.primary, fontWeight: "600", fontSize: 13 },
   tabs: { flexDirection: "row", borderTopWidth: 0.5, borderTopColor: colors.border, borderBottomWidth: 0.5, borderBottomColor: colors.border },

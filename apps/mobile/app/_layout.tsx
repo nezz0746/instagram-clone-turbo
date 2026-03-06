@@ -96,6 +96,7 @@ export default function RootLayout() {
         <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="user/[username]" options={{ presentation: "card" }} />
         </Stack>
       </View>
     </AuthContext.Provider>
