@@ -110,7 +110,7 @@ export const posts = pgTable(
     authorId: uuid("author_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    imageUrl: text("image_url").notNull(), // first/cover image (backward compat)
+    imageUrl: text("image_url"), // first/cover image, null for text-only posts
     caption: text("caption"),
     imageCount: integer("image_count").default(1).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),

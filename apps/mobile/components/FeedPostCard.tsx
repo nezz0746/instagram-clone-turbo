@@ -39,7 +39,10 @@ export function FeedPostCard({ post, onLike, onOpenComments }: Props) {
   const images =
     post.imageUrls && post.imageUrls.length > 0
       ? post.imageUrls
-      : [post.imageUrl];
+      : post.imageUrl
+        ? [post.imageUrl]
+        : [];
+  const hasImages = images.length > 0;
   const isCarousel = images.length > 1;
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -66,47 +69,55 @@ export function FeedPostCard({ post, onLike, onOpenComments }: Props) {
         <IconButton name="ellipsis-horizontal" size={20} />
       </View>
 
-      {/* Image(s) */}
-      {isCarousel ? (
-        <View>
-          <FlatList
-            data={images}
-            keyExtractor={(_, i) => `img-${i}`}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={onScroll}
-            scrollEventThrottle={16}
-            renderItem={({ item }) => (
-              <Image
-                source={{ uri: item }}
-                style={{ width: MAX_WIDTH, height: MAX_WIDTH }}
-                resizeMode="cover"
-              />
-            )}
+      {/* Image(s) or text-only body */}
+      {hasImages ? (
+        isCarousel ? (
+          <View>
+            <FlatList
+              data={images}
+              keyExtractor={(_, i) => `img-${i}`}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onScroll={onScroll}
+              scrollEventThrottle={16}
+              renderItem={({ item }) => (
+                <Image
+                  source={{ uri: item }}
+                  style={{ width: MAX_WIDTH, height: MAX_WIDTH }}
+                  resizeMode="cover"
+                />
+              )}
+            />
+            {/* Dots */}
+            <View className="flex-row justify-center gap-1.5 absolute bottom-3 left-0 right-0">
+              {images.map((imageUrl, i) => (
+                <View
+                  key={imageUrl}
+                  className={`w-1.5 h-1.5 rounded-full bg-white/50 ${i === activeIndex ? "bg-white" : ""}`}
+                />
+              ))}
+            </View>
+            {/* Counter */}
+            <View className="absolute top-3 right-3 bg-black/60 px-2.5 py-1 rounded-xl">
+              <Text className="text-white text-xs font-semibold">
+                {activeIndex + 1}/{images.length}
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <Image
+            source={{ uri: images[0] }}
+            style={{ width: MAX_WIDTH, height: MAX_WIDTH, alignSelf: "center" }}
+            resizeMode="cover"
           />
-          {/* Dots */}
-          <View className="flex-row justify-center gap-1.5 absolute bottom-3 left-0 right-0">
-            {images.map((imageUrl, i) => (
-              <View
-                key={imageUrl}
-                className={`w-1.5 h-1.5 rounded-full bg-white/50 ${i === activeIndex ? "bg-white" : ""}`}
-              />
-            ))}
-          </View>
-          {/* Counter */}
-          <View className="absolute top-3 right-3 bg-black/60 px-2.5 py-1 rounded-xl">
-            <Text className="text-white text-xs font-semibold">
-              {activeIndex + 1}/{images.length}
-            </Text>
-          </View>
-        </View>
+        )
       ) : (
-        <Image
-          source={{ uri: images[0] }}
-          style={{ width: MAX_WIDTH, height: MAX_WIDTH, alignSelf: "center" }}
-          resizeMode="cover"
-        />
+        <View className="px-4 py-5" style={{ minHeight: 80 }}>
+          <Text className="text-text text-[15px] leading-[22px]">
+            {post.caption}
+          </Text>
+        </View>
       )}
 
       <View className="flex-row justify-between items-center px-3 py-2">
@@ -137,7 +148,7 @@ export function FeedPostCard({ post, onLike, onOpenComments }: Props) {
         <Text className="text-text font-semibold text-[13px]">
           {post.likes.toLocaleString()} j'aime
         </Text>
-        {post.caption && (
+        {hasImages && post.caption && (
           <Text className="text-text text-[13px] leading-[18px]">
             <Text className="text-text font-semibold text-[13px]">
               {post.author.username}

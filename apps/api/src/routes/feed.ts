@@ -125,9 +125,9 @@ export async function enrichPosts(
   return rawPosts.map((p) => ({
     id: p.posts.id,
     caption: p.posts.caption,
-    imageUrl: p.posts.imageUrl,
-    imageUrls: imagesMap[p.posts.id] || [p.posts.imageUrl],
-    imageCount: (imagesMap[p.posts.id] || [p.posts.imageUrl]).length,
+    imageUrl: p.posts.imageUrl ?? null,
+    imageUrls: imagesMap[p.posts.id] || (p.posts.imageUrl ? [p.posts.imageUrl] : []),
+    imageCount: p.posts.imageCount,
     createdAt: p.posts.createdAt,
     author: {
       id: p.users.id,

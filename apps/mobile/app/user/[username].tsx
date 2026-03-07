@@ -117,7 +117,13 @@ export default function UserProfileScreen() {
         )}
         renderItem={({ item, index }) => (
           <Pressable onPress={() => router.push(`/posts/${username}?startIndex=${index}`)}>
-            <Image source={{ uri: item.imageUrl }} style={{ width: TILE, height: TILE }} />
+            {item.imageUrl ? (
+              <Image source={{ uri: item.imageUrl }} style={{ width: TILE, height: TILE }} />
+            ) : (
+              <View style={{ width: TILE, height: TILE, backgroundColor: colors.surface, justifyContent: "center", alignItems: "center" }}>
+                <Ionicons name="text-outline" size={24} color={colors.textMuted} />
+              </View>
+            )}
           </Pressable>
         )}
       />

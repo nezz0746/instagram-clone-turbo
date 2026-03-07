@@ -34,7 +34,7 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
 export type FeedPost = {
   id: string;
   caption: string | null;
-  imageUrl: string;
+  imageUrl: string | null;
   imageUrls?: string[];
   imageCount?: number;
   createdAt: string;
@@ -81,7 +81,7 @@ export type Profile = {
 
 export type UserPost = {
   id: string;
-  imageUrl: string;
+  imageUrl: string | null;
   createdAt: string;
 };
 

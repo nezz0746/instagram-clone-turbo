@@ -107,16 +107,18 @@ export default function CreateScreen() {
   };
 
   const handlePost = async () => {
-    if (selected.length === 0) return;
+    if (selected.length === 0 && !caption.trim()) return;
     setUploading(true);
     try {
       // Upload each image to S3/MinIO
-      const imageUrls = await Promise.all(selected.map(uploadImage));
+      const imageUrls = selected.length > 0
+        ? await Promise.all(selected.map(uploadImage))
+        : [];
       await createPostMutation.mutateAsync({ imageUrls, caption: caption || undefined });
       setSelected([]);
       setCaption("");
       setShowCaption(false);
-      Alert.alert("Publié ! 🎉", "Ta photo est maintenant visible");
+      Alert.alert("Publié ! 🎉", selected.length > 0 ? "Ta publication est maintenant visible" : "Ton message est maintenant visible");
     } catch (e: any) {
       Alert.alert("Erreur", e.message || "Impossible de publier");
     } finally {
@@ -148,13 +150,13 @@ export default function CreateScreen() {
         <Text className="text-lg font-bold text-text">Nouvelle publication</Text>
         <Pressable
           onPress={showCaption ? handlePost : () => setShowCaption(true)}
-          disabled={selected.length === 0 || uploading}
-          style={{ opacity: selected.length === 0 || uploading ? 0.4 : 1 }}
+          disabled={uploading}
+          style={{ opacity: uploading ? 0.4 : 1 }}
         >
           {uploading ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Text className="text-primary font-bold text-base">{showCaption ? "Partager" : "Suivant"}</Text>
+            <Text className="text-primary font-bold text-base" style={{ opacity: showCaption && selected.length === 0 && !caption.trim() ? 0.4 : 1 }}>{showCaption ? "Partager" : "Suivant"}</Text>
           )}
         </Pressable>
       </View>

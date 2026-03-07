@@ -13,15 +13,17 @@ app.post("/", requirePermission(PERMISSION.POST), async (c) => {
   const body = await c.req.json();
   const { caption } = body;
 
-  // Support both single and multi-image
+  // Support both single and multi-image, and text-only posts
   const imageUrls: string[] = body.imageUrls || (body.imageUrl ? [body.imageUrl] : []);
-  if (imageUrls.length === 0) return c.json({ error: "Image required" }, 400);
+  if (imageUrls.length === 0 && !caption?.trim()) {
+    return c.json({ error: "Caption or image required" }, 400);
+  }
 
   const [post] = await db
     .insert(posts)
     .values({
       authorId: userId,
-      imageUrl: imageUrls[0], // cover image
+      imageUrl: imageUrls[0] || null, // cover image, null for text-only
       caption,
       imageCount: imageUrls.length,
     })
