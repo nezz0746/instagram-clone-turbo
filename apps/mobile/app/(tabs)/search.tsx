@@ -1,46 +1,20 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { View, Text, TextInput, FlatList, Image, StyleSheet, Dimensions, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, EXPLORE_IMAGES } from "@garona/shared";
-import { profilesApi } from "../../lib/api";
 import { Avatar } from "@garona/ui";
 import { PalierBadge } from "../../components/PalierBadge";
+import { useSearchQuery } from "../../hooks/queries/useSearchQuery";
 
 const GAP = 2;
 const COLS = 3;
 const TILE = (Math.min(Dimensions.get("window").width, 600) - GAP * (COLS - 1)) / COLS;
 
-type SearchResult = {
-  id: string;
-  username: string;
-  name: string;
-  avatarUrl: string | null;
-  bio: string | null;
-};
-
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-
-  const handleSearch = useCallback(async (q: string) => {
-    setQuery(q);
-    if (q.length < 2) {
-      setResults([]);
-      return;
-    }
-    setSearching(true);
-    try {
-      const data = await profilesApi.search(q);
-      setResults(data);
-    } catch {
-      setResults([]);
-    } finally {
-      setSearching(false);
-    }
-  }, []);
+  const { data: results = [], isLoading: searching } = useSearchQuery(query);
 
   const showResults = query.length >= 2;
 
@@ -53,12 +27,12 @@ export default function SearchScreen() {
           placeholderTextColor={colors.textMuted}
           style={styles.input}
           value={query}
-          onChangeText={handleSearch}
+          onChangeText={setQuery}
           autoCapitalize="none"
           autoCorrect={false}
         />
         {query.length > 0 && (
-          <Pressable onPress={() => handleSearch("")}>
+          <Pressable onPress={() => setQuery("")}>
             <Ionicons name="close-circle" size={18} color={colors.textMuted} />
           </Pressable>
         )}

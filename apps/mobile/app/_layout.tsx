@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { View, Pressable, Text, ActivityIndicator } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { colors } from "@garona/shared";
 import { AuthContext, AuthUser } from "../lib/auth";
 import { LaunchScreen } from "../components/LaunchScreen";
@@ -9,6 +10,7 @@ import { SignupForm } from "../components/SignupForm";
 import { SigninSheet } from "../components/SigninSheet";
 import { TutorialSlides } from "../components/TutorialSlides";
 import { meApi, SignupResult } from "../lib/api";
+import { queryClient, clearAllQueries } from "../lib/queryClient";
 
 type AppState = "loading" | "launch" | "signup" | "tutorial" | "authenticated";
 
@@ -65,6 +67,7 @@ export default function RootLayout() {
       const { authClient } = await import("../lib/auth-client");
       await authClient.signOut();
     } catch {}
+    clearAllQueries();
     setUser(null);
     setInviteCode(null);
     setAppState("launch");
@@ -153,24 +156,26 @@ export default function RootLayout() {
 
   // Authenticated
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading: false,
-        inviteCode,
-        setInviteCode,
-        signIn: () => {},
-        signOut,
-      }}
-    >
-      <View style={{ flex: 1, backgroundColor: colors.bg }}>
-        <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="user/[username]" options={{ presentation: "card" }} />
-          <Stack.Screen name="posts/[username]" options={{ presentation: "card" }} />
-        </Stack>
-      </View>
-    </AuthContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <AuthContext.Provider
+        value={{
+          user,
+          isLoading: false,
+          inviteCode,
+          setInviteCode,
+          signIn: () => {},
+          signOut,
+        }}
+      >
+        <View style={{ flex: 1, backgroundColor: colors.bg }}>
+          <StatusBar style="dark" />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="user/[username]" options={{ presentation: "card" }} />
+            <Stack.Screen name="posts/[username]" options={{ presentation: "card" }} />
+          </Stack>
+        </View>
+      </AuthContext.Provider>
+    </QueryClientProvider>
   );
 }

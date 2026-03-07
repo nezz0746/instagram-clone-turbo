@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, Dimensions, Pressable, FlatList, NativeS
 import { router } from "expo-router";
 import { colors } from "@garona/shared";
 import { Avatar, IconButton } from "@garona/ui";
-import { FeedPost, postsApi } from "../lib/api";
+import type { FeedPost } from "../lib/api";
 
 const MAX_WIDTH = Math.min(Dimensions.get("window").width, 600);
 
@@ -25,25 +25,10 @@ function timeAgo(dateStr: string): string {
 }
 
 export function FeedPostCard({ post, onLike, onOpenComments }: Props) {
-  const [liked, setLiked] = useState(post.liked);
-  const [likes, setLikes] = useState(post.likes);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const images = post.imageUrls && post.imageUrls.length > 0 ? post.imageUrls : [post.imageUrl];
   const isCarousel = images.length > 1;
-
-  const handleLike = async () => {
-    const wasLiked = liked;
-    setLiked(!wasLiked);
-    setLikes(wasLiked ? likes - 1 : likes + 1);
-    try {
-      const res = await postsApi.like(post.id);
-      setLiked(res.liked);
-    } catch {
-      setLiked(wasLiked);
-      setLikes(wasLiked ? likes : likes - 1);
-    }
-  };
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const idx = Math.round(e.nativeEvent.contentOffset.x / MAX_WIDTH);
@@ -97,10 +82,10 @@ export function FeedPostCard({ post, onLike, onOpenComments }: Props) {
       <View style={styles.actions}>
         <View style={styles.actionsLeft}>
           <IconButton
-            name={liked ? "heart" : "heart-outline"}
+            name={post.liked ? "heart" : "heart-outline"}
             size={26}
-            color={liked ? "#e91e63" : colors.text}
-            onPress={handleLike}
+            color={post.liked ? "#e91e63" : colors.text}
+            onPress={onLike}
           />
           <IconButton name="chatbubble-outline" onPress={onOpenComments} />
           <IconButton name="paper-plane-outline" />
@@ -116,7 +101,7 @@ export function FeedPostCard({ post, onLike, onOpenComments }: Props) {
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.likes}>{likes.toLocaleString()} j'aime</Text>
+        <Text style={styles.likes}>{post.likes.toLocaleString()} j'aime</Text>
         {post.caption && (
           <Text style={styles.caption}>
             <Text style={styles.username}>{post.author.username}</Text> {post.caption}

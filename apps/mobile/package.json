@@ -16,6 +16,7 @@
     "@expo/vector-icons": "^15.1.1",
     "@garona/shared": "workspace:*",
     "@garona/ui": "workspace:*",
+    "@tanstack/react-query": "^5.90.21",
     "expo": "~55.0.5",
     "expo-camera": "~55.0.9",
     "expo-clipboard": "~55.0.8",

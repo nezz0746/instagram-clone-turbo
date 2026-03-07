@@ -1,23 +1,20 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { FlatList, View, Text, StyleSheet, RefreshControl, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@garona/shared";
-import { useFeed } from "../../hooks/useFeed";
+import { useFeedQuery } from "../../hooks/queries/useFeedQuery";
+import { useLikeMutation } from "../../hooks/mutations/useLikeMutation";
 import { FeedPostCard } from "../../components/FeedPostCard";
 import { CommentsSheet } from "../../components/CommentsSheet";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { posts, loading, error, refresh, toggleLike } = useFeed();
+  const { data: posts = [], isLoading, error, refetch } = useFeedQuery();
+  const likeMutation = useLikeMutation();
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
-
-  const handleCommentAdded = useCallback(() => {
-    // Refresh feed to update comment counts
-    refresh();
-  }, [refresh]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -34,17 +31,17 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <FeedPostCard
             post={item}
-            onLike={() => toggleLike(item.id)}
+            onLike={() => likeMutation.mutate(item.id)}
             onOpenComments={() => setCommentPostId(item.id)}
           />
         )}
         ListEmptyComponent={() =>
-          !loading ? (
+          !isLoading ? (
             <View style={styles.empty}>
               {error ? (
                 <>
                   <Text style={styles.emptyText}>Erreur de chargement</Text>
-                  <Text style={styles.emptyHint}>{error}</Text>
+                  <Text style={styles.emptyHint}>{error.message}</Text>
                 </>
               ) : (
                 <>
@@ -55,7 +52,7 @@ export default function HomeScreen() {
             </View>
           ) : null
         }
-        refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.primary} />}
         showsVerticalScrollIndicator={false}
       />
 
@@ -63,7 +60,6 @@ export default function HomeScreen() {
         postId={commentPostId}
         visible={commentPostId !== null}
         onClose={() => setCommentPostId(null)}
-        onCommentAdded={handleCommentAdded}
       />
     </View>
   );

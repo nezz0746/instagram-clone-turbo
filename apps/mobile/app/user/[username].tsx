@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, FlatList, Image, Dimensions } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@garona/shared";
 import { Avatar } from "@garona/ui";
-import { useProfile } from "../../hooks/useProfile";
-import { profilesApi, UserPost } from "../../lib/api";
+import { useProfileQuery } from "../../hooks/queries/useProfileQuery";
+import { useProfilePostsQuery } from "../../hooks/queries/useProfilePostsQuery";
+import { useFollowMutation } from "../../hooks/mutations/useFollowMutation";
 import { PalierBadge } from "../../components/PalierBadge";
 import { VouchButton } from "../../components/VouchButton";
 
@@ -26,16 +26,11 @@ function Stat({ label, value }: { label: string; value: number }) {
 export default function UserProfileScreen() {
   const { username } = useLocalSearchParams<{ username: string }>();
   const insets = useSafeAreaInsets();
-  const { profile, loading, toggleFollow } = useProfile(username);
-  const [userPosts, setUserPosts] = useState<UserPost[]>([]);
+  const { data: profile, isLoading } = useProfileQuery(username);
+  const { data: userPosts = [] } = useProfilePostsQuery(username);
+  const followMutation = useFollowMutation(username);
 
-  useEffect(() => {
-    if (username) {
-      profilesApi.posts(username).then(setUserPosts).catch(() => setUserPosts([]));
-    }
-  }, [username]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -96,7 +91,7 @@ export default function UserProfileScreen() {
               <View style={styles.actionRow}>
                 <Pressable
                   style={[styles.followBtn, profile.isFollowing && styles.followingBtn]}
-                  onPress={toggleFollow}
+                  onPress={() => followMutation.mutate()}
                 >
                   <Text style={[styles.followText, profile.isFollowing && styles.followingText]}>
                     {profile.isFollowing ? "Abonné" : "S'abonner"}

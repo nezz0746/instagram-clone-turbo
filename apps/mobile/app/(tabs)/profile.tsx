@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { View, Text, FlatList, Image, StyleSheet, Dimensions, Pressable, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
@@ -8,7 +8,8 @@ import { Avatar, IconButton } from "@garona/ui";
 import { PalierBadge } from "../../components/PalierBadge";
 import { ProfileShareSheet } from "../../components/ProfileShareSheet";
 import { useAuth } from "../../lib/auth";
-import { profilesApi, Profile, UserPost } from "../../lib/api";
+import { useProfileQuery } from "../../hooks/queries/useProfileQuery";
+import { useProfilePostsQuery } from "../../hooks/queries/useProfilePostsQuery";
 
 const GAP = 2;
 const COLS = 3;
@@ -26,28 +27,11 @@ function Stat({ label, value }: { label: string; value: number }) {
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user, signOut } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [userPosts, setUserPosts] = useState<UserPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: profile, isLoading: profileLoading } = useProfileQuery(user?.username || "");
+  const { data: userPosts = [] } = useProfilePostsQuery(user?.username || "");
   const [shareVisible, setShareVisible] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!user?.username) return;
-    setLoading(true);
-    try {
-      const [p, posts] = await Promise.all([
-        profilesApi.get(user.username),
-        profilesApi.posts(user.username),
-      ]);
-      setProfile(p);
-      setUserPosts(posts);
-    } catch {}
-    setLoading(false);
-  }, [user?.username]);
-
-  useEffect(() => { load(); }, [load]);
-
-  if (loading && !profile) {
+  if (profileLoading && !profile) {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color={colors.primary} />

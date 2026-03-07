@@ -1,12 +1,12 @@
+import { useState } from "react";
 import { View, Text, FlatList, StyleSheet, Pressable, Image, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@garona/shared";
 import { Avatar } from "@garona/ui";
-import { useAuth } from "../../lib/auth";
-import { useState, useEffect, useCallback } from "react";
-import { activityApi, profilesApi, ActivityItem } from "../../lib/api";
+import { profilesApi, ActivityItem } from "../../lib/api";
+import { useActivityQuery } from "../../hooks/queries/useActivityQuery";
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -59,23 +59,7 @@ function NotifRow({ item }: { item: ActivityItem }) {
 
 export default function ActivityScreen() {
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
-  const [items, setItems] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await activityApi.get();
-      setItems(data);
-    } catch {
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
+  const { data: items = [], isLoading, refetch } = useActivityQuery();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -88,10 +72,10 @@ export default function ActivityScreen() {
         keyExtractor={(n) => n.id}
         renderItem={({ item }) => <NotifRow item={item} />}
         refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={load} tintColor={colors.primary} />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.primary} />
         }
         ListEmptyComponent={() =>
-          !loading ? (
+          !isLoading ? (
             <View style={styles.empty}>
               <Ionicons name="heart-outline" size={48} color={colors.textMuted} />
               <Text style={styles.emptyText}>Aucune activité pour le moment</Text>

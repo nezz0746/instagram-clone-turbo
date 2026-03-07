@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import {
   View, Text, StyleSheet, Modal, Pressable, FlatList,
   TextInput, ActivityIndicator, KeyboardAvoidingView, Platform,
@@ -6,64 +6,26 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@garona/shared";
 import { Avatar } from "@garona/ui";
-import { postsApi } from "../lib/api";
-
-type Comment = {
-  id: string;
-  authorId: string;
-  text: string;
-  createdAt: string;
-  author?: { username: string; name: string; avatarUrl: string | null };
-};
+import { useCommentsQuery } from "../hooks/queries/useCommentsQuery";
+import { useCommentMutation } from "../hooks/mutations/useCommentMutation";
 
 type Props = {
   postId: string | null;
   visible: boolean;
   onClose: () => void;
-  onCommentAdded: () => void;
 };
 
-export function CommentsSheet({ postId, visible, onClose, onCommentAdded }: Props) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(false);
+export function CommentsSheet({ postId, visible, onClose }: Props) {
+  const { data: comments = [], isLoading } = useCommentsQuery(visible ? postId : null);
+  const commentMutation = useCommentMutation(postId || "");
   const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
-  useEffect(() => {
-    if (visible && postId) {
-      loadComments();
-    } else {
-      setComments([]);
-    }
-  }, [visible, postId]);
-
-  const loadComments = async () => {
-    if (!postId) return;
-    setLoading(true);
-    try {
-      const data = await postsApi.comments(postId);
-      setComments(data as Comment[]);
-    } catch {
-      setComments([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSend = async () => {
-    if (!text.trim() || !postId || sending) return;
-    setSending(true);
-    try {
-      await postsApi.comment(postId, text.trim());
-      setText("");
-      onCommentAdded();
-      await loadComments();
-    } catch {
-      // silent
-    } finally {
-      setSending(false);
-    }
+  const handleSend = () => {
+    if (!text.trim() || !postId || commentMutation.isPending) return;
+    commentMutation.mutate(text.trim(), {
+      onSuccess: () => setText(""),
+    });
   };
 
   function timeAgo(dateStr: string): string {
@@ -94,7 +56,7 @@ export function CommentsSheet({ postId, visible, onClose, onCommentAdded }: Prop
         </View>
 
         {/* Comments list */}
-        {loading ? (
+        {isLoading ? (
           <View style={styles.center}>
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
@@ -110,11 +72,11 @@ export function CommentsSheet({ postId, visible, onClose, onCommentAdded }: Prop
             contentContainerStyle={styles.list}
             renderItem={({ item }) => (
               <View style={styles.comment}>
-                <Avatar uri={item.author?.avatarUrl} name={item.author?.username} size={32} />
+                <Avatar uri={(item as any).author?.avatarUrl} name={(item as any).author?.username} size={32} />
                 <View style={styles.commentBody}>
                   <Text style={styles.commentText}>
                     <Text style={styles.commentAuthor}>
-                      {item.author?.username || "utilisateur"}
+                      {(item as any).author?.username || "utilisateur"}
                     </Text>{" "}
                     {item.text}
                   </Text>
@@ -139,10 +101,10 @@ export function CommentsSheet({ postId, visible, onClose, onCommentAdded }: Prop
           />
           <Pressable
             onPress={handleSend}
-            disabled={!text.trim() || sending}
-            style={[styles.sendBtn, (!text.trim() || sending) && { opacity: 0.4 }]}
+            disabled={!text.trim() || commentMutation.isPending}
+            style={[styles.sendBtn, (!text.trim() || commentMutation.isPending) && { opacity: 0.4 }]}
           >
-            {sending ? (
+            {commentMutation.isPending ? (
               <ActivityIndicator size="small" color={colors.primary} />
             ) : (
               <Ionicons name="send" size={20} color={colors.primary} />

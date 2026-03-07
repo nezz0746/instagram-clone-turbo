@@ -8,8 +8,8 @@ import { Ionicons } from "@expo/vector-icons";
 import * as MediaLibrary from "expo-media-library";
 import * as ImagePicker from "expo-image-picker";
 import { colors } from "@garona/shared";
-import { postsApi } from "../../lib/api";
 import { API_URL, useAuth } from "../../lib/auth";
+import { useCreatePostMutation } from "../../hooks/mutations/useCreatePostMutation";
 
 const SCREEN_W = Dimensions.get("window").width;
 const GALLERY_COLS = 4;
@@ -31,6 +31,7 @@ export default function CreateScreen() {
   const [hasPermission, setHasPermission] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [showCaption, setShowCaption] = useState(false);
+  const createPostMutation = useCreatePostMutation();
 
   const palier = user?.palier ?? 0;
   const canPost = palier >= 2;
@@ -111,7 +112,7 @@ export default function CreateScreen() {
     try {
       // Upload each image to S3/MinIO
       const imageUrls = await Promise.all(selected.map(uploadImage));
-      await postsApi.create(imageUrls, caption || undefined);
+      await createPostMutation.mutateAsync({ imageUrls, caption: caption || undefined });
       setSelected([]);
       setCaption("");
       setShowCaption(false);

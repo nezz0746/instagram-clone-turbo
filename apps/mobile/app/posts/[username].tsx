@@ -4,28 +4,21 @@ import { useLocalSearchParams, router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@garona/shared";
-import { FeedPost, profilesApi } from "../../lib/api";
 import { FeedPostCard } from "../../components/FeedPostCard";
 import { CommentsSheet } from "../../components/CommentsSheet";
+import { useProfilePostsFeedQuery } from "../../hooks/queries/useProfilePostsFeedQuery";
 
 export default function UserPostsScreen() {
   const { username, startIndex } = useLocalSearchParams<{ username: string; startIndex?: string }>();
   const insets = useSafeAreaInsets();
-  const [posts, setPosts] = useState<FeedPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: posts = [], isLoading } = useProfilePostsFeedQuery(username);
   const [commentPostId, setCommentPostId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
   const [scrolledOnce, setScrolledOnce] = useState(false);
 
-  useEffect(() => {
-    if (!username) return;
-    setLoading(true);
-    profilesApi.postsFeed(username).then(setPosts).catch(() => setPosts([])).finally(() => setLoading(false));
-  }, [username]);
-
   // Scroll to tapped post
   useEffect(() => {
-    if (!loading && posts.length > 0 && startIndex && !scrolledOnce) {
+    if (!isLoading && posts.length > 0 && startIndex && !scrolledOnce) {
       const idx = parseInt(startIndex, 10);
       if (idx > 0 && idx < posts.length) {
         setTimeout(() => {
@@ -34,9 +27,9 @@ export default function UserPostsScreen() {
       }
       setScrolledOnce(true);
     }
-  }, [loading, posts, startIndex, scrolledOnce]);
+  }, [isLoading, posts, startIndex, scrolledOnce]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={[styles.container, styles.center, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color={colors.primary} />
@@ -77,7 +70,6 @@ export default function UserPostsScreen() {
         postId={commentPostId}
         visible={commentPostId !== null}
         onClose={() => setCommentPostId(null)}
-        onCommentAdded={() => {}}
       />
     </View>
   );
