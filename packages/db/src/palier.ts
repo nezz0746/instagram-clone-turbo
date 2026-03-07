@@ -8,11 +8,31 @@
 // Rang 2+ = earned via vouches
 export const RANG_THRESHOLDS = [
   { level: 0, vouches: -1, label: "Visiteur", abilities: ["browse feed"] },
-  { level: 1, vouches: 0, label: "Membre", abilities: ["create profile", "follow", "like"] },
-  { level: 2, vouches: 3, label: "Contributeur", abilities: ["post", "comment"] },
+  {
+    level: 1,
+    vouches: 0,
+    label: "Membre",
+    abilities: ["create profile", "follow", "like"],
+  },
+  {
+    level: 2,
+    vouches: 3,
+    label: "Contributeur",
+    abilities: ["post", "comment"],
+  },
   { level: 3, vouches: 5, label: "Résident", abilities: ["DMs"] },
-  { level: 4, vouches: 10, label: "Notable", abilities: ["create events", "generate invites"] },
-  { level: 5, vouches: 20, label: "Gardien", abilities: ["moderate", "verify others"] },
+  {
+    level: 4,
+    vouches: 10,
+    label: "Notable",
+    abilities: ["create events", "generate invites"],
+  },
+  {
+    level: 5,
+    vouches: 20,
+    label: "Gardien",
+    abilities: ["moderate", "verify others"],
+  },
 ] as const;
 
 // Backward compat alias
@@ -32,12 +52,18 @@ export function computePalier(totalWeight: number): PalierLevel {
 // Vouch weight based on voucher's rang
 export function vouchWeight(voucherPalier: PalierLevel): number {
   switch (voucherPalier) {
-    case 0: return 0; // rang 0 can't vouch
-    case 1: return 1;
-    case 2: return 1;
-    case 3: return 2;
-    case 4: return 3;
-    case 5: return 5;
+    case 0:
+      return 0; // rang 0 can't vouch
+    case 1:
+      return 1;
+    case 2:
+      return 1;
+    case 3:
+      return 2;
+    case 4:
+      return 3;
+    case 5:
+      return 5;
   }
 }
 
