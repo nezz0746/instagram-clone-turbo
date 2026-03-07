@@ -16,7 +16,8 @@
         "S3_SECRET_KEY",
         "PUBLIC_API_URL",
         "EXPO_PUBLIC_API_URL",
-        "EXPO_PUBLIC_PASSKEY_RP_ID"
+        "EXPO_PUBLIC_PASSKEY_RP_ID",
+        "ADMIN_PASSWORD"
       ]
     },
     "start": {
@@ -33,7 +34,8 @@
         "S3_SECRET_KEY",
         "PUBLIC_API_URL",
         "EXPO_PUBLIC_API_URL",
-        "EXPO_PUBLIC_PASSKEY_RP_ID"
+        "EXPO_PUBLIC_PASSKEY_RP_ID",
+        "ADMIN_PASSWORD"
       ]
     },
     "lint": {},
