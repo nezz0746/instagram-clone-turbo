@@ -1,25 +1,78 @@
 import "../global.css";
-import { useState, useCallback, useEffect } from "react";
-import { View, Pressable, Text, ActivityIndicator } from "react-native";
+import {
+  Manrope_400Regular,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  useFonts,
+} from "@expo-google-fonts/manrope";
+import { colors } from "@garona/shared";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { colors } from "@garona/shared";
-import { AuthContext, AuthUser } from "../lib/auth";
+import { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { LaunchScreen } from "../components/LaunchScreen";
-import { SignupForm } from "../components/SignupForm";
 import { SigninSheet } from "../components/SigninSheet";
+import { SignupForm } from "../components/SignupForm";
 import { TutorialSlides } from "../components/TutorialSlides";
-import { meApi, SignupResult } from "../lib/api";
-import { queryClient, clearAllQueries } from "../lib/queryClient";
+import { meApi, type SignupResult } from "../lib/api";
+import { AuthContext, type AuthUser } from "../lib/auth";
+import { clearAllQueries, queryClient } from "../lib/queryClient";
 
 type AppState = "loading" | "launch" | "signup" | "tutorial" | "authenticated";
+
+let globalFontApplied = false;
+
+function applyGlobalFontDefaults() {
+  if (globalFontApplied) return;
+
+  const textDefaultProps =
+    (Text as typeof Text & { defaultProps?: { style?: unknown } })
+      .defaultProps ?? {};
+  const inputDefaultProps =
+    (TextInput as typeof TextInput & { defaultProps?: { style?: unknown } })
+      .defaultProps ?? {};
+  const defaultFontStyle = { fontFamily: "Manrope_400Regular" };
+
+  (Text as typeof Text & { defaultProps?: { style?: unknown } }).defaultProps =
+    {
+      ...textDefaultProps,
+      style: textDefaultProps.style
+        ? [defaultFontStyle, textDefaultProps.style]
+        : defaultFontStyle,
+    };
+
+  (
+    TextInput as typeof TextInput & { defaultProps?: { style?: unknown } }
+  ).defaultProps = {
+    ...inputDefaultProps,
+    style: inputDefaultProps.style
+      ? [defaultFontStyle, inputDefaultProps.style]
+      : defaultFontStyle,
+  };
+
+  globalFontApplied = true;
+}
 
 export default function RootLayout() {
   const [appState, setAppState] = useState<AppState>("loading");
   const [user, setUser] = useState<AuthUser>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
+  const [fontsLoaded] = useFonts({
+    AntiqueOliveNord: require("../assets/AntiqueOliveNord.woff"),
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+  });
 
   // Check for existing session on mount
   useEffect(() => {
@@ -39,6 +92,10 @@ export default function RootLayout() {
         setAppState("launch");
       });
   }, []);
+
+  useEffect(() => {
+    if (fontsLoaded) applyGlobalFontDefaults();
+  }, [fontsLoaded]);
 
   const handleSignedUp = useCallback((result: SignupResult) => {
     setUser({
@@ -86,7 +143,7 @@ export default function RootLayout() {
   }, []);
 
   // Loading — checking session
-  if (appState === "loading") {
+  if (!fontsLoaded || appState === "loading") {
     return (
       <View className="flex-1 bg-bg justify-center items-center">
         <StatusBar style="dark" />
@@ -162,10 +219,21 @@ export default function RootLayout() {
       >
         <View className="flex-1 bg-bg">
           <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.bg },
+            }}
+          >
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="user/[username]" options={{ presentation: "card" }} />
-            <Stack.Screen name="posts/[username]" options={{ presentation: "card" }} />
+            <Stack.Screen
+              name="user/[username]"
+              options={{ presentation: "card" }}
+            />
+            <Stack.Screen
+              name="posts/[username]"
+              options={{ presentation: "card" }}
+            />
           </Stack>
         </View>
       </AuthContext.Provider>

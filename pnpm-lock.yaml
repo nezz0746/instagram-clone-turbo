@@ -62,6 +62,9 @@ importers:
       '@babel/runtime':
         specifier: ^7.28.6
         version: 7.28.6
+      '@expo-google-fonts/manrope':
+        specifier: ^0.4.2
+        version: 0.4.2
       '@expo/metro-runtime':
         specifier: ^55.0.6
         version: 55.0.6(@expo/dom-webview@55.0.3)(expo@55.0.5)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
@@ -1303,6 +1306,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@expo-google-fonts/manrope@0.4.2':
+    resolution: {integrity: sha512-BZsKe8d9BJrVnIQIZcTS7/Kac0TbXnqs/+8EBSiQxrmK6GoCO6eTkmr50D1weIk/EoF20pTmAkpWICnovATr/g==}
 
   '@expo-google-fonts/material-symbols@0.4.25':
     resolution: {integrity: sha512-MlwOpcYPLYu2+aDAwqv29l3sknNNxA36Jcu07Tg9+MTEvXk2SPcO8eQmwwDeVBbv5Wb6ToD1LmE+e0lLv/9WvA==}
@@ -5945,6 +5951,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.3':
     optional: true
+
+  '@expo-google-fonts/manrope@0.4.2': {}
 
   '@expo-google-fonts/material-symbols@0.4.25': {}
 

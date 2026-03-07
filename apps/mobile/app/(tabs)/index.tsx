@@ -1,13 +1,14 @@
-import { useState } from "react";
-import { FlatList, View, Text, RefreshControl, Pressable } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@garona/shared";
-import { useFeedQuery } from "../../hooks/queries/useFeedQuery";
-import { useLikeMutation } from "../../hooks/mutations/useLikeMutation";
-import { FeedPostCard } from "../../components/FeedPostCard";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BrandText } from "../../components/BrandText";
 import { CommentsSheet } from "../../components/CommentsSheet";
+import { FeedPostCard } from "../../components/FeedPostCard";
+import { useLikeMutation } from "../../hooks/mutations/useLikeMutation";
+import { useFeedQuery } from "../../hooks/queries/useFeedQuery";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -18,8 +19,13 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
-      <View className="flex-row justify-between items-center px-4 py-2 border-b border-border" style={{ borderBottomWidth: 0.5 }}>
-        <Text className="text-2xl font-bold text-primary tracking-tight">Garona</Text>
+      <View
+        className="flex-row justify-between items-center px-4 py-2 border-b border-border"
+        style={{ borderBottomWidth: 0.5 }}
+      >
+        <BrandText className="text-2xl text-accent tracking-tight">
+          Garona
+        </BrandText>
         <Pressable onPress={() => router.push("/guide")} hitSlop={8}>
           <Ionicons name="book-outline" size={24} color={colors.text} />
         </Pressable>
@@ -40,19 +46,33 @@ export default function HomeScreen() {
             <View className="p-10 items-center gap-2">
               {error ? (
                 <>
-                  <Text className="text-base font-semibold text-text">Erreur de chargement</Text>
-                  <Text className="text-sm text-text-muted text-center">{error.message}</Text>
+                  <Text className="text-base font-semibold text-text">
+                    Erreur de chargement
+                  </Text>
+                  <Text className="text-sm text-text-muted text-center">
+                    {error.message}
+                  </Text>
                 </>
               ) : (
                 <>
-                  <Text className="text-base font-semibold text-text">Aucune publication pour le moment</Text>
-                  <Text className="text-sm text-text-muted text-center">Suis des Toulousains pour voir leurs posts ici</Text>
+                  <Text className="text-base font-semibold text-text">
+                    Aucune publication pour le moment
+                  </Text>
+                  <Text className="text-sm text-text-muted text-center">
+                    Suis des Toulousains pour voir leurs posts ici
+                  </Text>
                 </>
               )}
             </View>
           ) : null
         }
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.primary} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={refetch}
+            tintColor={colors.accent}
+          />
+        }
         showsVerticalScrollIndicator={false}
       />
 

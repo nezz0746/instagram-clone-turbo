@@ -25,8 +25,17 @@ export default function SearchScreen() {
 
   return (
     <View className="flex-1 bg-bg" style={{ paddingTop: insets.top }}>
-      <View className="flex-row items-center bg-surface rounded-xl mx-4 my-2 px-3 gap-2">
-        <Ionicons name="search" size={18} color={colors.textMuted} />
+      <View
+        className="flex-row items-center bg-surface rounded-xl mx-4 my-2 px-3 gap-2 border"
+        style={{
+          borderColor: query.length > 0 ? colors.accentSoft : colors.border,
+        }}
+      >
+        <Ionicons
+          name="search"
+          size={18}
+          color={query.length > 0 ? colors.accent : colors.textMuted}
+        />
         <TextInput
           placeholder="Chercher un Toulousain..."
           placeholderTextColor={colors.textMuted}
@@ -73,7 +82,7 @@ export default function SearchScreen() {
         ListHeaderComponent={() =>
           showResults && searching ? (
             <View className="px-4 py-5">
-              <ActivityIndicator size="small" color={colors.primary} />
+              <ActivityIndicator size="small" color={colors.accent} />
             </View>
           ) : null
         }
