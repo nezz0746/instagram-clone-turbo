@@ -10,7 +10,7 @@ async function apiFetch<T>(path: string, options: FetchOptions = {}): Promise<T>
     url += `?${qs}`;
   }
 
-  const devHeaders: Record<string, string> = __DEV__ ? { "X-Dev-User": "nezz" } : {};
+  const devHeaders: Record<string, string> = __DEV__ ? { "X-Dev-User": "garona" } : {};
 
   const res = await fetch(url, {
     ...init,

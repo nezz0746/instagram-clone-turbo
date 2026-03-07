@@ -31,11 +31,11 @@ async function seed() {
   // ─── Users ───
   const seedUsers = [
     {
-      name: "Nezz",
-      username: "nezz",
-      email: "nezz@garona.city",
-      bio: "Dev toulousain 🧱",
-      avatarUrl: "https://i.pravatar.cc/150?u=nezz",
+      name: "Garona",
+      username: "garona",
+      email: "garona@garona.local",
+      bio: "Compte officiel Garona",
+      avatarUrl: "https://i.pravatar.cc/150?u=garona",
     },
     {
       name: "Sarah Dupont",
@@ -142,7 +142,7 @@ async function seed() {
 
   // ─── Vouches ───
   // Build a realistic trust graph:
-  // nezz (0) — rang 3 (many vouches)
+  // garona (0) — rang 3 (many vouches)
   // sarah (1), alex (2) — rang 3 (many vouches)
   // marco (3), luna (4), youssef (5) — rang 2
   // camille (6), thomas (7) — rang 2
@@ -152,7 +152,7 @@ async function seed() {
 
   const u = inserted;
   const vouchPairs: [number, number][] = [
-    // Everyone vouches nezz (rang 3)
+    // Everyone vouches garona (rang 3)
     [1, 0],
     [2, 0],
     [3, 0],

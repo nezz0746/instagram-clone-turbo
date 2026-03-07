@@ -2,10 +2,10 @@ import { User, Post, Story, Notification } from "./types";
 
 export const CURRENT_USER: User = {
   id: "u1",
-  username: "nezz",
-  displayName: "Nezz",
-  avatar: "https://i.pravatar.cc/150?u=nezz",
-  bio: "Dev toulousain 🧱",
+  username: "garona",
+  displayName: "Garona",
+  avatar: "https://i.pravatar.cc/150?u=garona",
+  bio: "Compte officiel Garona",
   posts: 42,
   followers: 1234,
   following: 567,

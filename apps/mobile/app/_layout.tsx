@@ -132,8 +132,8 @@ export default function RootLayout() {
   const devSkip = useCallback(() => {
     setUser({
       id: "dev-user",
-      name: "Nezz",
-      username: "nezz",
+      name: "Garona",
+      username: "garona",
       avatarUrl: null,
       rang: 4,
     });
