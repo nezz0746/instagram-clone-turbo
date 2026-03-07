@@ -6,16 +6,14 @@ Garona is a trust-based social network for the city of Toulouse. Unlike traditio
 
 ## Core Concept: The Rang System
 
-Every user has a **Rang** (trust level) from 0 to 5, computed dynamically from the vouches they've received. Higher rang unlocks more abilities on the platform.
+Every user has a **Rang** (trust level) from 0 to 3, computed dynamically from the vouches they've received. Higher rang unlocks more abilities on the platform.
 
-| Rang | Label | Vouch Weight Needed | Abilities Unlocked |
-|------|-------|---------------------|-------------------|
-| 0 | Visiteur | — (unauthenticated) | Browse the feed |
-| 1 | Membre | 0 (just sign up) | Create profile, follow users, like posts |
-| 2 | Contributeur | 3+ | Post content, comment |
-| 3 | Résident | 5+ | Direct messages |
-| 4 | Notable | 10+ | Create events |
-| 5 | Gardien | 20+ | Moderate content, verify other users |
+| Rang | Vouch Weight Needed | Vouch Weight | Abilities Unlocked |
+|------|---------------------|-------------|-------------------|
+| 0 | — (unauthenticated) | — | Browse the feed |
+| 1 | 0 (just sign up) | 1 | Create profile, follow users, like posts |
+| 2 | 3+ | 1 | Post content, comment |
+| 3 | 20+ | 5 | Moderate content, verify other users |
 
 A user's rang is **never stored** — it's always computed on-the-fly from the sum of active (non-revoked) vouch weights they've received. Authenticated users are always at least Rang 1.
 
@@ -23,18 +21,7 @@ A user's rang is **never stored** — it's always computed on-the-fly from the s
 
 ## Vouching Mechanics
 
-### How Vouching Works
-
-Any user at Rang 1+ can vouch for another user. Each vouch carries a **weight** that depends on the voucher's own rang:
-
-| Voucher's Rang | Vouch Weight |
-|----------------|-------------|
-| 0 (Visiteur) | Cannot vouch |
-| 1 (Membre) | 1 |
-| 2 (Contributeur) | 1 |
-| 3 (Résident) | 2 |
-| 4 (Notable) | 3 |
-| 5 (Gardien) | 5 |
+Any user at Rang 1+ can vouch for another user. Each vouch carries a **weight** that depends on the voucher's own rang (see table above). A user's total weight determines their rang.
 
 ### Rules
 
@@ -46,22 +33,18 @@ Any user at Rang 1+ can vouch for another user. Each vouch carries a **weight** 
 
 ### Example
 
-If a user receives:
-- 2 vouches from Rang 1 users (2 × weight 1 = 2)
-- 1 vouch from a Rang 3 user (1 × weight 2 = 2)
-
-Their total weight = **4**, making them Rang 2 (Contributeur, needs 3+).
+If a user receives 3 vouches from Rang 1 users (3 x 1 = 3). Total weight = **3** -> Rang 2 (needs 3+).
 
 ---
 
 ## User Signup Flow
 
 1. User provides a **name** and **username**.
-2. Username is sanitized: lowercased, only `a-z`, `0-9`, `.`, `_`, `-` allowed. Must be 3–30 characters.
+2. Username is sanitized: lowercased, only `a-z`, `0-9`, `.`, `_`, `-` allowed. Must be 3-30 characters.
 3. An internal email is generated (`username@garona.local`) and a random password — users authenticate via passkeys, not passwords.
 4. Better-Auth creates the user and a session.
 5. The username is set on the user record (Better-Auth doesn't handle this field).
-6. User starts at **Rang 1 (Membre)**.
+6. User starts at **Rang 1**.
 
 ---
 

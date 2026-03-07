@@ -4,13 +4,12 @@ A trust-based social network built with Expo (React Native for web & mobile) and
 
 Users earn ranks through community vouching, unlocking features progressively:
 
-| Rang | Titre  | Capacites                    |
-| ---- | ------ | ---------------------------- |
-| 1    | Membre | Suivre, liker                |
-| 2    | Actif  | Poster, commenter            |
-| 3    | Proche | Messages prives              |
-| 4    | Leader | Organiser                    |
-| 5    | Ancien | Moderer                      |
+| Rang | Capacites                    |
+| ---- | ---------------------------- |
+| 0    | Consulter le feed            |
+| 1    | Suivre, liker                |
+| 2    | Poster, commenter            |
+| 3    | Moderer, verifier            |
 
 ## Stack
 
@@ -24,6 +23,7 @@ Users earn ranks through community vouching, unlocking features progressively:
 
 ```
 apps/
+  admin/        Next.js admin dashboard
   api/          Hono API server (auth, feed, profiles, vouches, uploads)
   mobile/       Expo app (web + iOS + Android)
 packages/
