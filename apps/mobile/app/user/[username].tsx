@@ -7,7 +7,7 @@ import { Avatar } from "@garona/ui";
 import { useProfileQuery } from "../../hooks/queries/useProfileQuery";
 import { useProfilePostsQuery } from "../../hooks/queries/useProfilePostsQuery";
 import { useFollowMutation } from "../../hooks/mutations/useFollowMutation";
-import { PalierBadge } from "../../components/PalierBadge";
+import { RangBadge } from "../../components/RangBadge";
 import { VouchButton } from "../../components/VouchButton";
 
 const GAP = 2;
@@ -81,7 +81,7 @@ export default function UserProfileScreen() {
             <View className="px-4 pt-3">
               <View className="flex-row items-center gap-2">
                 <Text className="text-text font-semibold text-[15px]">{profile.name}</Text>
-                <PalierBadge palier={profile.palier} size="sm" />
+                <RangBadge rang={profile.rang} size="sm" />
               </View>
               {profile.bio && <Text className="text-text text-[13px] mt-1">{profile.bio}</Text>}
             </View>

@@ -83,7 +83,7 @@ export default function RootLayout() {
           name: result.name,
           username: result.username,
           avatarUrl: result.avatarUrl,
-          palier: result.rang,
+          rang: result.rang,
         });
         setAppState("authenticated");
       })
@@ -102,7 +102,7 @@ export default function RootLayout() {
       name: result.name,
       username: result.username,
       avatarUrl: result.avatarUrl,
-      palier: result.rang,
+      rang: result.rang,
     });
     setAppState("tutorial"); // Show tutorial after signup
   }, []);
@@ -113,7 +113,7 @@ export default function RootLayout() {
       name: result.name,
       username: result.username,
       avatarUrl: result.avatarUrl,
-      palier: result.rang,
+      rang: result.rang,
     });
     setShowSignIn(false);
     setAppState("authenticated"); // Skip tutorial for returning users
@@ -135,7 +135,7 @@ export default function RootLayout() {
       name: "Nezz",
       username: "nezz",
       avatarUrl: null,
-      palier: 4,
+      rang: 4,
     });
     setAppState("authenticated");
   }, []);

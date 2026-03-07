@@ -7,7 +7,7 @@ import { vouchesApi } from "../lib/api";
 type Props = {
   userId: string;
   hasVouched: boolean;
-  onVouchChange?: (vouched: boolean, newPalier: number) => void;
+  onVouchChange?: (vouched: boolean, newRang: number) => void;
 };
 
 export function VouchButton({ userId, hasVouched: initialVouched, onVouchChange }: Props) {
@@ -18,13 +18,13 @@ export function VouchButton({ userId, hasVouched: initialVouched, onVouchChange 
     setLoading(true);
     try {
       if (vouched) {
-        const { newPalier } = await vouchesApi.revoke(userId);
+        const { newRang } = await vouchesApi.revoke(userId);
         setVouched(false);
-        onVouchChange?.(false, newPalier);
+        onVouchChange?.(false, newRang);
       } else {
-        const { newPalier } = await vouchesApi.vouch(userId);
+        const { newRang } = await vouchesApi.vouch(userId);
         setVouched(true);
-        onVouchChange?.(true, newPalier);
+        onVouchChange?.(true, newRang);
       }
     } catch (e) {
       // Optimistic toggle anyway for demo

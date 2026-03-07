@@ -1,8 +1,4 @@
-import {
-  RANG_THRESHOLDS,
-  vouchWeight,
-  type PalierLevel,
-} from "@garona/db";
+import { RANG_THRESHOLDS, vouchWeight, type RangLevel } from "@garona/db";
 
 export default function Home() {
   return (
@@ -26,7 +22,7 @@ export default function Home() {
           </h2>
           <p className="mt-3 text-zinc-600 dark:text-zinc-400">
             Garona is a trust-based social network for Toulouse. Every user has
-            a <strong>Rang</strong> (trust level) from 0 to 5, computed
+            a <strong>Rang</strong> (trust level) from 0 to 3, computed
             dynamically from the vouches they receive. Higher rang unlocks more
             abilities.
           </p>
@@ -36,27 +32,32 @@ export default function Home() {
               <thead>
                 <tr className="border-b border-zinc-200 bg-zinc-100 text-left text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
                   <th className="px-4 py-3 font-medium">Rang</th>
-                  <th className="px-4 py-3 font-medium">Label</th>
                   <th className="px-4 py-3 font-medium">Weight Needed</th>
+                  <th className="px-4 py-3 font-medium">Vouch Weight</th>
                   <th className="px-4 py-3 font-medium">Abilities Unlocked</th>
                 </tr>
               </thead>
               <tbody className="text-zinc-700 dark:text-zinc-300">
-                {RANG_THRESHOLDS.map((t) => (
-                  <tr
-                    key={t.level}
-                    className="border-b border-zinc-100 last:border-0 dark:border-zinc-800/50"
-                  >
-                    <td className="px-4 py-3 font-mono font-semibold">
-                      {t.level}
-                    </td>
-                    <td className="px-4 py-3">{t.label}</td>
-                    <td className="px-4 py-3 font-mono">
-                      {t.vouches < 0 ? "—" : `${t.vouches}+`}
-                    </td>
-                    <td className="px-4 py-3">{t.abilities.join(", ")}</td>
-                  </tr>
-                ))}
+                {RANG_THRESHOLDS.map((t) => {
+                  const w = vouchWeight(t.level as RangLevel);
+                  return (
+                    <tr
+                      key={t.level}
+                      className="border-b border-zinc-100 last:border-0 dark:border-zinc-800/50"
+                    >
+                      <td className="px-4 py-3 font-mono font-semibold">
+                        {t.level}
+                      </td>
+                      <td className="px-4 py-3 font-mono">
+                        {t.vouches < 0 ? "—" : `${t.vouches}+`}
+                      </td>
+                      <td className="px-4 py-3 font-mono">
+                        {w === 0 ? "—" : w}
+                      </td>
+                      <td className="px-4 py-3">{t.permissions.join(", ")}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -74,40 +75,9 @@ export default function Home() {
           </h2>
           <p className="mt-3 text-zinc-600 dark:text-zinc-400">
             Any user at Rang 1+ can vouch for another user. Each vouch carries a{" "}
-            <strong>weight</strong> that depends on the voucher&apos;s own rang.
-            A user&apos;s total weight determines their rang.
+            <strong>weight</strong> that depends on the voucher&apos;s own rang
+            (see table above). A user&apos;s total weight determines their rang.
           </p>
-
-          <div className="mt-6 overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-200 bg-zinc-100 text-left text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-                  <th className="px-4 py-3 font-medium">
-                    Voucher&apos;s Rang
-                  </th>
-                  <th className="px-4 py-3 font-medium">Vouch Weight</th>
-                </tr>
-              </thead>
-              <tbody className="text-zinc-700 dark:text-zinc-300">
-                {RANG_THRESHOLDS.map((t) => {
-                  const w = vouchWeight(t.level as PalierLevel);
-                  return (
-                    <tr
-                      key={t.level}
-                      className="border-b border-zinc-100 last:border-0 dark:border-zinc-800/50"
-                    >
-                      <td className="px-4 py-3">
-                        {t.level} — {t.label}
-                      </td>
-                      <td className="px-4 py-3 font-mono">
-                        {w === 0 ? "Cannot vouch" : w}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
 
           <div className="mt-6 space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-500">
@@ -121,8 +91,8 @@ export default function Home() {
                 history). Revoked vouches don&apos;t count.
               </li>
               <li>
-                Revoked vouches can be re-activated — the existing row is updated
-                instead of creating a new one.
+                Revoked vouches can be re-activated — the existing row is
+                updated instead of creating a new one.
               </li>
               <li>
                 The vouchee&apos;s rang is recalculated after every vouch or
@@ -136,9 +106,8 @@ export default function Home() {
               Example
             </h3>
             <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              A user receives 2 vouches from Rang 1 users (2 x 1 = 2) and 1
-              vouch from a Rang 3 user (1 x 2 = 2). Total weight ={" "}
-              <strong>4</strong> → Rang 2 (Contributeur, needs 3+).
+              A user receives 3 vouches from Rang 1 users (3 x 1 = 3). Total
+              weight = <strong>3</strong> → Rang 2 (needs 3+).
             </p>
           </div>
         </section>
@@ -166,7 +135,7 @@ export default function Home() {
               passkeys.
             </li>
             <li>Better-Auth creates the user and session.</li>
-            <li>User starts at Rang 1 (Membre).</li>
+            <li>User starts at Rang 1.</li>
           </ol>
         </section>
 
@@ -177,12 +146,13 @@ export default function Home() {
           </h2>
           <p className="mt-3 text-zinc-600 dark:text-zinc-400">
             Garona uses <strong>Better-Auth</strong> with{" "}
-            <strong>Passkey/WebAuthn</strong> as the primary method. Sessions are
-            stored in the database and validated via cookies.
+            <strong>Passkey/WebAuthn</strong> as the primary method. Sessions
+            are stored in the database and validated via cookies.
           </p>
           <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-950/30">
             <p className="text-sm text-amber-800 dark:text-amber-300">
-              <strong>Dev mode:</strong> In non-production environments, send the{" "}
+              <strong>Dev mode:</strong> In non-production environments, send
+              the{" "}
               <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-xs dark:bg-amber-900/50">
                 X-Dev-User
               </code>{" "}
@@ -292,12 +262,12 @@ export default function Home() {
                   {
                     route: "POST /api/vouches/vouch/:id",
                     desc: "Vouch for a user",
-                    auth: "Rang 1+",
+                    auth: "vouch",
                   },
                   {
                     route: "DELETE /api/vouches/vouch/:id",
                     desc: "Revoke vouch",
-                    auth: "Rang 1+",
+                    auth: "vouch",
                   },
                   {
                     route: "GET /api/feed",
@@ -307,17 +277,17 @@ export default function Home() {
                   {
                     route: "POST /api/posts",
                     desc: "Create post",
-                    auth: "Rang 2+",
+                    auth: "post",
                   },
                   {
                     route: "POST /api/posts/:id/like",
                     desc: "Like/unlike post",
-                    auth: "Rang 2+",
+                    auth: "like",
                   },
                   {
                     route: "POST /api/posts/:id/comment",
                     desc: "Add comment",
-                    auth: "Rang 2+",
+                    auth: "comment",
                   },
                   {
                     route: "GET /api/profiles/:username",
@@ -327,7 +297,7 @@ export default function Home() {
                   {
                     route: "POST /api/profiles/:username/follow",
                     desc: "Follow user",
-                    auth: "Rang 1+",
+                    auth: "follow",
                   },
                   {
                     route: "GET /api/profiles",

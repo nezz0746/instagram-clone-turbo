@@ -48,9 +48,9 @@ app.use("/api/*", async (c, next) => {
   const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
   if (!session?.user) {
-    // Allow read-only access (palier 0 behavior)
+    // Allow read-only access (rang 0 behavior)
     c.set("userId", null);
-    c.set("palier", 0);
+    c.set("rang", 0);
     return next();
   }
 

@@ -1,7 +1,7 @@
-import { db, follows, posts, users, vouches } from "@garona/db";
+import { db, follows, posts, users, vouches, PERMISSION } from "@garona/db";
 import { and, eq, ilike, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
-import { getUserPalier, requirePalier } from "../middleware";
+import { getUserRang, requirePermission } from "../middleware";
 
 const app = new Hono();
 
@@ -16,7 +16,7 @@ app.get("/:username", async (c) => {
     .where(eq(users.username, username));
   if (!user) return c.json({ error: "Not found" }, 404);
 
-  const palier = await getUserPalier(user.id);
+  const rang = await getUserRang(user.id);
 
   const [postCount] = await db
     .select({ count: sql<number>`count(*)` })
@@ -67,7 +67,7 @@ app.get("/:username", async (c) => {
     name: user.name,
     bio: user.bio,
     avatarUrl: user.avatarUrl,
-    palier,
+    rang,
     posts: Number(postCount.count),
     followers: Number(followerCount.count),
     following: Number(followingCount.count),
@@ -77,8 +77,8 @@ app.get("/:username", async (c) => {
   });
 });
 
-// Follow (palier >= 1)
-app.post("/:username/follow", requirePalier(1), async (c) => {
+// Follow (requires FOLLOW permission)
+app.post("/:username/follow", requirePermission(PERMISSION.FOLLOW), async (c) => {
   const followerId = c.get("userId");
   const username = c.req.param("username");
 

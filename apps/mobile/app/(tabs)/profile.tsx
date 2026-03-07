@@ -5,7 +5,7 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@garona/shared";
 import { Avatar, IconButton } from "@garona/ui";
-import { PalierBadge } from "../../components/PalierBadge";
+import { RangBadge } from "../../components/RangBadge";
 import { ProfileShareSheet } from "../../components/ProfileShareSheet";
 import { useAuth } from "../../lib/auth";
 import { useProfileQuery } from "../../hooks/queries/useProfileQuery";
@@ -69,7 +69,7 @@ export default function ProfileScreen() {
             <View className="px-4 pt-3">
               <View className="flex-row items-center gap-2">
                 <Text className="text-text font-semibold text-[15px]">{profile?.name || user?.name}</Text>
-                <PalierBadge palier={profile?.palier ?? user?.palier ?? 0} size="sm" />
+                <RangBadge rang={profile?.rang ?? user?.rang ?? 0} size="sm" />
               </View>
               {profile?.bio && <Text className="text-text text-[13px] mt-1">{profile.bio}</Text>}
             </View>

@@ -33,8 +33,8 @@ export default function CreateScreen() {
   const [showCaption, setShowCaption] = useState(false);
   const createPostMutation = useCreatePostMutation();
 
-  const palier = user?.palier ?? 0;
-  const canPost = palier >= 2;
+  const rang = user?.rang ?? 0;
+  const canPost = rang >= 2;
 
   // Load gallery
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function CreateScreen() {
         <View className="w-[100px] h-[100px] rounded-full bg-surface justify-center items-center mb-4">
           <Ionicons name="lock-closed-outline" size={48} color={colors.textMuted} />
         </View>
-        <Text className="text-xl font-bold text-text">Palier 2 requis</Text>
+        <Text className="text-xl font-bold text-text">Rang 2 requis</Text>
         <Text className="text-sm text-text-muted text-center leading-[22px] mt-2">
           Tu dois être au moins Habitant (3 parrainages) pour publier des photos.
         </Text>

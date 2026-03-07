@@ -5,7 +5,7 @@ export type AuthUser = {
   name: string;
   username: string;
   avatarUrl: string | null;
-  palier: number;
+  rang: number;
 } | null;
 
 export type AuthContextType = {

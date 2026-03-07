@@ -8,7 +8,7 @@ import {
   follows,
   stories,
 } from "./schema";
-import { computePalier } from "./palier";
+import { computeRang } from "./rang";
 
 async function seed() {
   console.log("🌱 Seeding Garona...");
@@ -142,17 +142,17 @@ async function seed() {
 
   // ─── Vouches ───
   // Build a realistic trust graph:
-  // nezz (0) is a Capitoul — everyone vouches for him
-  // sarah (1), alex (2) are Ambassadeurs
-  // marco (3), luna (4), youssef (5) are Toulousains
-  // camille (6), thomas (7) are Habitants
-  // léa (8), omar (9) are Voisins
-  // julie (10), rami (11), emma (12) are Observateurs (new, few vouches)
-  // lucas (13), inès (14) are brand new (0 vouches)
+  // nezz (0) — rang 3 (many vouches)
+  // sarah (1), alex (2) — rang 3 (many vouches)
+  // marco (3), luna (4), youssef (5) — rang 2
+  // camille (6), thomas (7) — rang 2
+  // léa (8), omar (9) — rang 1 (few vouches)
+  // julie (10), rami (11), emma (12) — rang 1 (just joined)
+  // lucas (13), inès (14) — rang 1 (brand new, 0 vouches)
 
   const u = inserted;
   const vouchPairs: [number, number][] = [
-    // Everyone vouches nezz (palier 5)
+    // Everyone vouches nezz (rang 3)
     [1, 0],
     [2, 0],
     [3, 0],
@@ -164,7 +164,7 @@ async function seed() {
     [9, 0],
     [10, 0],
     [11, 0],
-    // Many vouch sarah (palier 4)
+    // Many vouch sarah (rang 3)
     [0, 1],
     [2, 1],
     [3, 1],
@@ -175,7 +175,7 @@ async function seed() {
     [8, 1],
     [9, 1],
     [10, 1],
-    // Many vouch alex (palier 4)
+    // Many vouch alex (rang 3)
     [0, 2],
     [1, 2],
     [3, 2],
@@ -186,38 +186,38 @@ async function seed() {
     [8, 2],
     [9, 2],
     [10, 2],
-    // Some vouch marco (palier 3)
+    // Some vouch marco (rang 2)
     [0, 3],
     [1, 3],
     [2, 3],
     [4, 3],
     [5, 3],
-    // Some vouch luna (palier 3)
+    // Some vouch luna (rang 2)
     [0, 4],
     [1, 4],
     [2, 4],
     [3, 4],
     [5, 4],
-    // Some vouch youssef (palier 3)
+    // Some vouch youssef (rang 2)
     [0, 5],
     [1, 5],
     [2, 5],
     [3, 5],
     [4, 5],
-    // A few vouch camille (palier 2)
+    // A few vouch camille (rang 2)
     [0, 6],
     [1, 6],
     [2, 6],
-    // A few vouch thomas (palier 2)
+    // A few vouch thomas (rang 2)
     [0, 7],
     [1, 7],
     [3, 7],
-    // Couple vouch léa (palier 1)
+    // Couple vouch léa (rang 1)
     [0, 8],
-    // Couple vouch omar (palier 1)
+    // Couple vouch omar (rang 1)
     [0, 9],
-    // julie, rami, emma just joined — 0 vouches (palier 0)
-    // lucas, inès — 0 vouches (palier 0)
+    // julie, rami, emma just joined — 0 vouches (rang 1)
+    // lucas, inès — 0 vouches (rang 1)
   ];
 
   const vouchValues = vouchPairs.map(([voucher, vouchee]) => ({
@@ -231,7 +231,7 @@ async function seed() {
     console.log(`  ✅ ${vouchValues.length} vouches`);
   }
 
-  // ─── Posts (only from users with palier >= 2) ───
+  // ─── Posts (only from users with rang >= 2) ───
   const postData = [
     {
       authorId: u[0].id,
@@ -394,13 +394,13 @@ async function seed() {
   console.log(`  ✅ ${storyValues.length} stories`);
 
   console.log("\n🎉 Seed complete!");
-  console.log("\nPalier summary:");
+  console.log("\nRang summary:");
   // Count vouches per user
   for (let i = 0; i < inserted.length; i++) {
     const count = vouchPairs.filter(([_, vouchee]) => vouchee === i).length;
-    const palier = computePalier(count);
+    const rang = computeRang(count);
     console.log(
-      `  ${inserted[i].username.padEnd(20)} ${count} vouches → palier ${palier} (${["Observateur", "Voisin", "Habitant", "Toulousain", "Ambassadeur", "Capitoul"][palier]})`,
+      `  ${inserted[i].username.padEnd(20)} ${count} vouches → rang ${rang}`,
     );
   }
 

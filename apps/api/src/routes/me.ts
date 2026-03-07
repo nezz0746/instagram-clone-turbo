@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { db, users } from "@garona/db";
 import { eq } from "drizzle-orm";
-import { computePalier } from "@garona/db";
 
 const app = new Hono();
 

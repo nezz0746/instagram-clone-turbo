@@ -1,11 +1,12 @@
 import { Hono } from "hono";
-import { requirePalier } from "../middleware";
+import { requirePermission } from "../middleware";
+import { PERMISSION } from "@garona/db";
 import crypto from "crypto";
 
 const app = new Hono();
 
-// Generate presigned upload URL (palier >= 2)
-app.post("/presign", requirePalier(2), async (c) => {
+// Generate presigned upload URL (requires POST permission)
+app.post("/presign", requirePermission(PERMISSION.POST), async (c) => {
   const userId = c.get("userId");
   const { contentType = "image/jpeg" } = await c.req.json().catch(() => ({}));
 
@@ -34,7 +35,7 @@ app.post("/presign", requirePalier(2), async (c) => {
 });
 
 // Direct upload endpoint for dev (accepts multipart)
-app.post("/", requirePalier(2), async (c) => {
+app.post("/", requirePermission(PERMISSION.POST), async (c) => {
   const body = await c.req.parseBody();
   const file = body["file"];
 

@@ -1,17 +1,17 @@
 import { Hono } from "hono";
 import { db, vouches, users } from "@garona/db";
-import { vouchWeight } from "@garona/db/src/palier";
+import { vouchWeight, PERMISSION } from "@garona/db";
 import { eq, and, sql } from "drizzle-orm";
-import { requirePalier, getUserPalier } from "../middleware";
+import { requirePermission, getUserRang } from "../middleware";
 
 const app = new Hono();
 
-// Get my palier + vouch info
+// Get my rang + vouch info
 app.get("/me", async (c) => {
   const userId = c.get("userId");
   if (!userId) return c.json({ error: "Unauthorized" }, 401);
 
-  const palier = await getUserPalier(userId);
+  const rang = await getUserRang(userId);
 
   // Count received vouches
   const received = await db
@@ -26,17 +26,17 @@ app.get("/me", async (c) => {
     .where(and(eq(vouches.voucherId, userId), eq(vouches.revoked, false)));
 
   return c.json({
-    palier,
+    rang,
     vouchesReceived: Number(received[0]?.count ?? 0),
     vouchesGiven: Number(given[0]?.count ?? 0),
   });
 });
 
-// Vouch for someone (palier >= 1)
-app.post("/vouch/:userId", requirePalier(1), async (c) => {
+// Vouch for someone (requires VOUCH permission)
+app.post("/vouch/:userId", requirePermission(PERMISSION.VOUCH), async (c) => {
   const voucherId = c.get("userId");
   const voucheeId = c.req.param("userId");
-  const voucherPalier = c.get("palier");
+  const voucherRang = c.get("rang");
 
   if (voucherId === voucheeId) {
     return c.json({ error: "Can't vouch yourself" }, 400);
@@ -56,7 +56,7 @@ app.post("/vouch/:userId", requirePalier(1), async (c) => {
     return c.json({ error: "Already vouched" }, 409);
   }
 
-  const weight = vouchWeight(voucherPalier);
+  const weight = vouchWeight(voucherRang);
 
   if (existing.length > 0) {
     // Re-vouch (was revoked)
@@ -68,12 +68,12 @@ app.post("/vouch/:userId", requirePalier(1), async (c) => {
     await db.insert(vouches).values({ voucherId, voucheeId, weight });
   }
 
-  const newPalier = await getUserPalier(voucheeId);
-  return c.json({ success: true, newPalier });
+  const newRang = await getUserRang(voucheeId);
+  return c.json({ success: true, newRang });
 });
 
 // Revoke vouch
-app.delete("/vouch/:userId", requirePalier(1), async (c) => {
+app.delete("/vouch/:userId", requirePermission(PERMISSION.VOUCH), async (c) => {
   const voucherId = c.get("userId");
   const voucheeId = c.req.param("userId");
 
@@ -82,8 +82,8 @@ app.delete("/vouch/:userId", requirePalier(1), async (c) => {
     .set({ revoked: true })
     .where(and(eq(vouches.voucherId, voucherId), eq(vouches.voucheeId, voucheeId)));
 
-  const newPalier = await getUserPalier(voucheeId);
-  return c.json({ success: true, newPalier });
+  const newRang = await getUserRang(voucheeId);
+  return c.json({ success: true, newRang });
 });
 
 export default app;

@@ -17,19 +17,19 @@ const sizeClasses = {
 };
 
 type Props = {
-  palier: number;
+  rang: number;
   size?: "sm" | "md" | "lg";
 };
 
-export function PalierBadge({ palier, size = "md" }: Props) {
-  const config = RANG_CONFIG[palier] || RANG_CONFIG[0];
+export function RangBadge({ rang, size = "md" }: Props) {
+  const config = RANG_CONFIG[rang] || RANG_CONFIG[0];
   const sc = sizeClasses[size];
 
   return (
     <View className={`flex-row items-center gap-1 border rounded-[20px] ${sc.badge}`} style={{ borderColor: config.color }}>
       <Text className={sc.emoji}>{config.emoji}</Text>
       <Text className={`font-semibold ${sc.label}`} style={{ color: config.color }}>
-        Rang {palier} — {config.label}
+        Rang {rang} — {config.label}
       </Text>
     </View>
   );

@@ -1,13 +1,14 @@
 import { Hono } from "hono";
 import { db, posts, postImages, likes, comments, users } from "@garona/db";
 import { eq, and } from "drizzle-orm";
-import { requirePalier } from "../middleware";
+import { requirePermission } from "../middleware";
+import { PERMISSION } from "@garona/db";
 
 const app = new Hono();
 
-// Create post (palier >= 2)
+// Create post (requires POST permission)
 // Accepts { imageUrl, caption } or { imageUrls: string[], caption }
-app.post("/", requirePalier(2), async (c) => {
+app.post("/", requirePermission(PERMISSION.POST), async (c) => {
   const userId = c.get("userId");
   const body = await c.req.json();
   const { caption } = body;
@@ -36,8 +37,8 @@ app.post("/", requirePalier(2), async (c) => {
   return c.json(post, 201);
 });
 
-// Like post (palier >= 2)
-app.post("/:postId/like", requirePalier(2), async (c) => {
+// Like post (requires LIKE permission)
+app.post("/:postId/like", requirePermission(PERMISSION.LIKE), async (c) => {
   const userId = c.get("userId");
   const postId = c.req.param("postId");
 
@@ -53,8 +54,8 @@ app.post("/:postId/like", requirePalier(2), async (c) => {
   }
 });
 
-// Comment on post (palier >= 2)
-app.post("/:postId/comment", requirePalier(2), async (c) => {
+// Comment on post (requires COMMENT permission)
+app.post("/:postId/comment", requirePermission(PERMISSION.COMMENT), async (c) => {
   const userId = c.get("userId");
   const postId = c.req.param("postId");
   const { text } = await c.req.json();

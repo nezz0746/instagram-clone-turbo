@@ -70,7 +70,7 @@ export type Profile = {
   name: string;
   bio: string | null;
   avatarUrl: string | null;
-  palier: number;
+  rang: number;
   posts: number;
   followers: number;
   following: number;
@@ -149,7 +149,7 @@ export const uploadApi = {
 
 // ─── Vouches ───
 export type VouchInfo = {
-  palier: number;
+  rang: number;
   vouchesReceived: number;
   vouchesGiven: number;
 };
@@ -157,7 +157,7 @@ export type VouchInfo = {
 export const vouchesApi = {
   me: () => apiFetch<VouchInfo>("/api/vouches/me"),
   vouch: (userId: string) =>
-    apiFetch<{ success: boolean; newPalier: number }>(`/api/vouches/vouch/${userId}`, { method: "POST" }),
+    apiFetch<{ success: boolean; newRang: number }>(`/api/vouches/vouch/${userId}`, { method: "POST" }),
   revoke: (userId: string) =>
-    apiFetch<{ success: boolean; newPalier: number }>(`/api/vouches/vouch/${userId}`, { method: "DELETE" }),
+    apiFetch<{ success: boolean; newRang: number }>(`/api/vouches/vouch/${userId}`, { method: "DELETE" }),
 };

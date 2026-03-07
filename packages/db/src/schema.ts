@@ -92,7 +92,7 @@ export const vouches = pgTable(
     voucheeId: uuid("vouchee_id")
       .notNull()
       .references(() => users.id),
-    weight: integer("weight").default(1).notNull(), // higher palier voucher = more weight
+    weight: integer("weight").default(1).notNull(), // higher rang voucher = more weight
     revoked: boolean("revoked").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },

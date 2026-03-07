@@ -1,3 +1,3 @@
 export * from "./schema";
 export * from "./client";
-export * from "./palier";
+export * from "./rang";

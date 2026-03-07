@@ -15,7 +15,7 @@ const RANGS = [
 export default function GuideScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const currentRang = user?.palier ?? 1;
+  const currentRang = user?.rang ?? 1;
 
   return (
     <ScrollView className="flex-1 bg-bg px-5" contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: 100 }}>
