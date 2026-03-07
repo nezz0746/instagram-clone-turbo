@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { View, Pressable, Text } from "react-native";
+import { useState, useCallback, useEffect } from "react";
+import { View, Pressable, Text, ActivityIndicator } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { colors } from "@garona/shared";
@@ -8,15 +8,34 @@ import { LaunchScreen } from "../components/LaunchScreen";
 import { SignupForm } from "../components/SignupForm";
 import { SigninSheet } from "../components/SigninSheet";
 import { TutorialSlides } from "../components/TutorialSlides";
-import { SignupResult } from "../lib/api";
+import { meApi, SignupResult } from "../lib/api";
 
-type AppState = "launch" | "signup" | "tutorial" | "authenticated";
+type AppState = "loading" | "launch" | "signup" | "tutorial" | "authenticated";
 
 export default function RootLayout() {
-  const [appState, setAppState] = useState<AppState>("launch");
+  const [appState, setAppState] = useState<AppState>("loading");
   const [user, setUser] = useState<AuthUser>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    meApi
+      .get()
+      .then((result) => {
+        setUser({
+          id: result.id,
+          name: result.name,
+          username: result.username,
+          avatarUrl: result.avatarUrl,
+          palier: result.rang,
+        });
+        setAppState("authenticated");
+      })
+      .catch(() => {
+        setAppState("launch");
+      });
+  }, []);
 
   const handleSignedUp = useCallback((result: SignupResult) => {
     setUser({
@@ -41,7 +60,11 @@ export default function RootLayout() {
     setAppState("authenticated"); // Skip tutorial for returning users
   }, []);
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
+    try {
+      const { authClient } = await import("../lib/auth-client");
+      await authClient.signOut();
+    } catch {}
     setUser(null);
     setInviteCode(null);
     setAppState("launch");
@@ -57,6 +80,16 @@ export default function RootLayout() {
     });
     setAppState("authenticated");
   }, []);
+
+  // Loading — checking session
+  if (appState === "loading") {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: "center", alignItems: "center" }}>
+        <StatusBar style="dark" />
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   // Launch screen
   if (appState === "launch") {
