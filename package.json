@@ -16,7 +16,9 @@
     "build:api": "turbo build --filter=api",
     "start:api": "turbo start --filter=api",
     "build:web": "turbo build --filter=mobile",
-    "start:web": "turbo start --filter=mobile"
+    "start:web": "turbo start --filter=mobile",
+    "build:admin": "turbo build --filter=admin",
+    "start:admin": "turbo start --filter=admin"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.6",
